@@ -1,0 +1,28 @@
+#DJANGO
+
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+
+staticfiles/
+media/
+
+.env
+
+Dockerfile
+docker-compose.yml
+
+.git
+.gitignore
+
+logs
+env
+docs
+dist
+
+requirements.txt
+
+
+# TO-ADD
+# NUXT ni se v dockerju

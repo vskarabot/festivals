@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  # bug, do nadaljnega ne bo v containerju, ker je potrebno ponovno zagnati npm install
+  #nuxt:
+  #  build: ./festivals-frontend
+  #  ports:
+  #    - "3000:3000"
+  #  volumes:
+  #    - ./festivals-frontend:/festivals
+  
+  db:
+    image: postgres
+    container_name: db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+  
+  web:
+    container_name: django
+    build: ./backend/code
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/code:/festivals
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    
+volumes:
+  postgres_data:
