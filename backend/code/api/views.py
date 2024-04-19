@@ -17,7 +17,14 @@ class FestivalList(generics.ListCreateAPIView):
     queryset = Festival.objects.all()
     serializer_class = FestivalSerializer
 
+    # add the user that sent request as a mod
+    def perform_create(self, serializer):
+        festival = serializer.save()
+        festival.mods.add(self.request.user)
+
 
 class FestivalDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+
     queryset = Festival.objects.all()
     serializer_class = FestivalSerializer
