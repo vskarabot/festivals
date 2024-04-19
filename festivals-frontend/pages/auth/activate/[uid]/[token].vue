@@ -8,6 +8,8 @@
         layout: 'blank'
     })
 
+    import * as requests from '../../../../services/requests'
+
     export default {
         data () {
             return {
@@ -17,22 +19,14 @@
                 success: false,
             }
         },
+        // this page opens by itself, sents request and if all ok activates account (Djoser)
         async mounted () {
             this.uid = this.$route.params.uid
             this.token = this.$route.params.token
 
-            const res = await fetch('http://localhost:8000/auth/users/activation/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    uid: this.uid,
-                    token: this.token
-                })
-            })
+            const responseData = await requests.activate(this.uid, this.token)
 
-            const status = res.status
+            const status = responseData.status
 
             // if no content -> success
             if (status === 204) {

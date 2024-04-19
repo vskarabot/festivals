@@ -25,6 +25,9 @@ class CustomUser(AbstractUser):
     country = models.CharField(max_length=2, choices=COUNTRIES)
     gender = models.CharField(max_length=1, choices=GENDERS)
 
+    #relationships - django will create the reverse relationships (no need to set mods on festival)
+    festivals = models.ManyToManyField('Festival', related_name='mods')
+
 
 ## FESTIVALS
 class Festival(models.Model):

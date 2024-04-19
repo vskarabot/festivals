@@ -1,6 +1,7 @@
 <template>
     <!-- menu for now -->
     <div>
+        <div>User: {{ logedUser }}</div>
         <NuxtLink to="/auth/login/" @click="handleLogout">Logout</NuxtLink>
         <hr>
     </div>
@@ -10,7 +11,7 @@
 <script setup>
     import authentication from '~/composables/auth'
 
-    const { logout, access } = authentication()
+    const { logout, access, logedUser } = authentication()
 
     const handleLogout = () => {
         logout()
