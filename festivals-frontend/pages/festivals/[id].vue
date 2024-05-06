@@ -10,7 +10,11 @@
     <p>Latitude: {{ festival.lat }}</p>
     <p>Longitude: {{ festival.lon }}</p>
     <hr>
-    <span>First map is for path. Second for choosing sleeping options nearby with parameters.</span>
+    <div>
+        <p>Location (for now only location):</p>
+        <p>(TODO: On the same map implement bookings with different parameters.)</p>
+        <Location :lat="festival.lat" :lon="festival.lon" :geolocationEnabled="false" />
+    </div>
 </template>
 
 <script setup>
@@ -42,10 +46,7 @@ definePageMeta({
         }
     })
 
-    // pogrunti kako passat na edit podatke -> cene pac se en request (kar je mogoce celo bolse ker vec uporabniku lahko updejta podatke d se ne spremenijo umes??)
-    // jutri uzemi si cajt in nrdi use funkcije u posebi fileu in pogrunti ku ta component nrdit
-    // d se ne ponavlja koda
-
+    // for now just new request
     const edit = () => {
         useRouter().push({
             name: 'festivals-add-edit-festival-id',
