@@ -10,15 +10,19 @@
             <input type="number" step="0.01" placeholder="Longitude" v-model="festival.lon"></input><br>
         </form>
     </div>
+    
+    <Location v-if="id" :lat="festival.lat" :lon="festival.lon" :geolocationEnabled="true" @location-changed="handleLocationChanged"/>
+    <Location v-else :lat="festival.lat" :lon="festival.lon" :geolocationEnabled="true" @location-changed="handleLocationChanged"/>
+
     <button @click="addOrEdit">{{ buttonText }}</button>
 </template>
 
 <script setup>
 import * as requests from '../services/requests'
 
-definePageMeta({
-    middleware: 'logedin'
-})
+    definePageMeta({
+        middleware: 'logedin'
+    })
 
     const id = ref(null)
     const buttonText = ref('')
@@ -27,12 +31,14 @@ definePageMeta({
         name: '',
         info: '',
         website: '',
-        lat: null,
-        lon: null
+        // default is Ljubljana, in future change to location of a user
+        lat: 14.5057515,
+        lon: 46.0569465
     })
     
     onMounted(async () => {
         id.value = useRoute().params.id
+
         if (id.value) {
             buttonText.value = 'Edit festival'
 
@@ -66,7 +72,11 @@ definePageMeta({
         // handle if fail
         console.log(response.status)
 
-        navigateTo(`/festivals/${id.value}`)
+        /* SWITCH TO REPLACE so that we don't have to go back to the list */
+        useRouter().replace(`/`)
+        .then(() => {
+            reloadNuxtApp()
+        })
     }
 
     const editFestival = async() => {
@@ -80,6 +90,14 @@ definePageMeta({
 
         console.log(response.status)
 
-        navigateTo(`/festivals/${id.value}`)
+        useRouter().replace(`/festivals/${id.value}`)
+        .then(() => {
+            reloadNuxtApp()
+        })
+    }
+
+    const handleLocationChanged = (location) => {
+        festival.value.lat = location[0]
+        festival.value.lon = location[1]
     }
 </script>

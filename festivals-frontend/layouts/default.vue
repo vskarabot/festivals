@@ -1,6 +1,7 @@
 <template>
     <!-- menu for now -->
     <div>
+        <button @click="home">Home</button>
         <div>User: {{ logedUser }}</div>
         <NuxtLink to="/auth/login/" @click="handleLogout">Logout</NuxtLink>
         <hr>
@@ -15,5 +16,9 @@
 
     const handleLogout = () => {
         logout()
+    }
+
+    const home = () => {
+        useRouter().replace('/')
     }
 </script>
