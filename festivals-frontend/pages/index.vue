@@ -18,11 +18,6 @@
 <script setup>
     import * as services from '../services/requests'
 
-    definePageMeta({
-        middleware: 'logedin'
-    })
-
-    
     const festivals = ref(null)
 
     onMounted(async () => {
