@@ -158,6 +158,8 @@ export const getFestivals = async () => {
     // get only method as access can change if token is refreshed
     const { isAuthenticated } = authentication()
     await isAuthenticated()
+
+    // as navigateTo triggers new page load, code from here is not executed if auth.js logs out
     // now get the access as there is no possibility that it was changed in the meantime
     const { access } = authentication()
 
