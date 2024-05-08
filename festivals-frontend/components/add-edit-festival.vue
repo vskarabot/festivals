@@ -18,11 +18,7 @@
 </template>
 
 <script setup>
-import * as requests from '../services/requests'
-
-    definePageMeta({
-        middleware: 'logedin'
-    })
+    import * as requests from '../services/requests'
 
     const id = ref(null)
     const buttonText = ref('')

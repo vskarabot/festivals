@@ -36,7 +36,9 @@ class FestivalSerializer(serializers.ModelSerializer):
                   'mods']
         
     
-    # only mods can change
+    # could be implemented in permissions but it's easier to do it here as we are validating data before updating
+    # deserialize and update only if user is a mod; if not return an error
+    # if user on frontend access via link he wont be able to change the festival
     def update(self, instance, validated_data):
         user = self.context['request'].user
         if user in instance.mods.all():

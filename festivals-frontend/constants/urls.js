@@ -12,6 +12,10 @@ export const LOGIN = BASE_URL + '/auth/jwt/create/'                        // PO
 export const REGISTER = BASE_URL + '/auth/users/'                          // POST (and get?)
 export const RESEND = BASE_URL + '/auth/users/resend_activation/'          // POST
 
+// TOKEN
+export const REFRESH = BASE_URL + '/auth/jwt/refresh/'                     // POST
+export const VERIFY = BASE_URL + '/auth/jwt/verify/'                       // POST
+
 // USER
 export const CURRENT_USER = BASE_URL + '/auth/users/me/'                   // GET
 

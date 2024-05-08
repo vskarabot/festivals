@@ -18,12 +18,9 @@
 </template>
 
 <script setup>
-import authentication from '~/composables/auth'
-import * as requests from '../../services/requests'
+    import authentication from '~/composables/auth'
+    import * as requests from '../../services/requests'
 
-definePageMeta({
-    middleware: 'logedin'
-})
     const { access } = authentication()
     const { id } = useRoute().params
     const festival = ref('')

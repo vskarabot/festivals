@@ -7,6 +7,50 @@ import authentication from '~/composables/auth'
  * Authentication endpoints
  */
 
+// VERIFY TOKEN
+export const verifyToken = async () => {
+
+    const { access } = authentication()
+
+    const response = await fetch(urls.VERIFY, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            token: access.value
+        })
+    })
+
+    // returns 200 if ok, 401 if field missing, 400 if token is invalid
+    return response.status
+}
+
+// REFRESH TOKEN
+export const refreshToken = async () => {
+
+    const { refresh, setTokens } = authentication()
+
+    const response = await fetch(urls.REFRESH, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            refresh: refresh.value
+        })
+    })
+
+    // if valid it returns new access token -> set it
+    if (response.status === 200) {
+        const responseData = await response.json()
+        setTokens(responseData.access)
+    }
+
+    return response.status
+}
+
+
 // REGISTER
 export const register = async (data) => {
     const response = await fetch(urls.REGISTER, {
@@ -110,6 +154,11 @@ export const getCurrentUser = async () => {
 
 // GET ALL FESTIVALS
 export const getFestivals = async () => {
+    
+    // get only method as access can change if token is refreshed
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    // now get the access as there is no possibility that it was changed in the meantime
     const { access } = authentication()
 
     const response = await fetch(urls.FESTIVALS, {
