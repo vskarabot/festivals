@@ -135,6 +135,10 @@ export const activate = async (uid, token) => {
 
 // GET CURRENT USER
 export const getCurrentUser = async () => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    
     const { access } = authentication()
 
     const response = await fetch(urls.CURRENT_USER, {
@@ -175,6 +179,10 @@ export const getFestivals = async () => {
 
 // GET FESTIVAL DETAIL
 export const getFestivalById = async (id) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+
     const { access } = authentication()
 
     const response = await fetch(urls.FESTIVAL_DETAIL(id), {
@@ -189,6 +197,10 @@ export const getFestivalById = async (id) => {
 
 // CREATE NEW FESTIVAL
 export const createFestival = async (data) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+
     const { access } = authentication()
 
     const response = await fetch(urls.FESTIVALS, {
@@ -211,6 +223,10 @@ export const createFestival = async (data) => {
 
 // UPDATE (PUT) FESTIVAL
 export const updateFestival = async (id, data) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+
     const { access } = authentication()
 
     const response = await fetch(urls.FESTIVAL_DETAIL(id), {
