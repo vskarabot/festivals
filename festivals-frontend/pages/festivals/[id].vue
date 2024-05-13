@@ -1,8 +1,10 @@
 <template>
     <h2>This is details page for festival with id {{ id }}</h2>
-    <button>Add to favorites</button>
+
+    <button @click="handleFavourite">{{ computeFavouriteText }}</button>
+
     <button>Go to festival forum</button>
-    <button @click="edit" v-if="isMod">Edit</button>
+    <button @click="edit" v-if="festival.is_mod">Edit</button>
     <p>{{ festival }}</p>
     <h2>{{ festival.name }}</h2>
     <p>Info: {{ festival.info }}</p>
@@ -18,14 +20,11 @@
 </template>
 
 <script setup>
-    import authentication from '~/composables/auth'
     import * as requests from '../../services/requests'
 
-    const { access } = authentication()
     const { id } = useRoute().params
     const festival = ref('')
     const currentUser = ref('')
-    const isMod = ref(false)
 
     onMounted(async () => {
         // get festival by id
@@ -35,18 +34,21 @@
         // get current user
         const response2 = await requests.getCurrentUser()
         currentUser.value = await response2.json()
-
-        // check if current user id is in festival mods
-        // -> if yes, show edit button
-        if (festival.value.mods.includes(currentUser.value.id)) {
-            isMod.value = true
-        }
     })
 
-    // for now just new request
+    // for now just new request for sending data in edit
     const edit = () => {
         useRouter().push({
             name: 'festivals-add-edit-festival-id',
         })
     }
+
+    const handleFavourite = async() => {
+        const response = await requests.addToFavourites(id)
+        festival.value = await response.json()
+    }
+
+    const computeFavouriteText = computed(() => {
+        return festival.value.is_favourite ? 'Favourite' : 'Add to favourites'
+    })
 </script>

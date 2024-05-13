@@ -27,6 +27,7 @@ class CustomUser(AbstractUser):
 
     #relationships - django will create the reverse relationships (no need to set mods on festival)
     festivals = models.ManyToManyField('Festival', related_name='mods')
+    favourite_festivals = models.ManyToManyField('Festival', related_name='favourite_by')
 
 
 ## FESTIVALS
