@@ -221,7 +221,7 @@ export const createFestival = async (data) => {
     return response
 }
 
-// UPDATE (PUT) FESTIVAL
+// UPDATE (PUT) FESTIVAL - drf handles partial updates by itself
 export const updateFestival = async (id, data) => {
 
     const { isAuthenticated } = authentication()
@@ -244,5 +244,27 @@ export const updateFestival = async (id, data) => {
         })
     })
     
+    return response
+}
+
+
+// ADD TO FAVOURITES (same endpoint as update) -- FIIXXX THISSS
+export const addToFavourites = async (festivalId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.FESTIVAL_DETAIL(festivalId), {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            favourite: true
+        })
+    })
+
     return response
 }

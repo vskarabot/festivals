@@ -93,6 +93,7 @@
     }
 
     const handleLocationChanged = (location) => {
+        console.log(location)
         festival.value.lat = location[0]
         festival.value.lon = location[1]
     }

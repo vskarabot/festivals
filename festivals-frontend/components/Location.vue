@@ -41,18 +41,20 @@ import { ref, onMounted } from 'vue'
         })
     })
 
+    // map, marker has [lon, lat]
+    // for some reaason geocoder uses [lat, lon]
     const initializeMap = (lat, lon, geolocationEnabled) => {
         mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
 
         const map = new mapboxgl.Map({
             container: 'map',
             style: MAP_LOOK,
-            center: [lat, lon],
+            center: [lon, lat],
             zoom: INITIAL_ZOOM
         })
 
         const marker = new mapboxgl.Marker({ color: MARKER_COLOR })
-            .setLngLat([lat, lon])
+            .setLngLat([lon, lat])
             .addTo(map)
 
         
@@ -65,7 +67,7 @@ import { ref, onMounted } from 'vue'
             map.addControl(geocoder)
 
             geocoder.on('result', (e) => {
-                marker.setLngLat(e.result.center)
+                marker.setLngLat(e.result.center.reverse())
                 // notify parent component about location change
                 emit('location-changed', e.result.center)
             })
