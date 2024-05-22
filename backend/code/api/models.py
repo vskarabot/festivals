@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
 
 
-from .choices import GENDERS, COUNTRIES
+from .choices import GENDERS, POST_LABELS, COUNTRIES
 
 ## USERS
 # so we can also login with username -> we modify the CustomUserManager to check either un or email
@@ -42,3 +42,24 @@ class Festival(models.Model):
     class Meta:
         ordering = ['name']
 
+
+#---------------------------------
+## POST
+class Post(models.Model):
+    title = models.CharField(max_length=50)
+    time = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()
+    label = models.CharField(choices=POST_LABELS)
+    edited = models.BooleanField(default=False)
+
+    #one-to-many relationship
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    festival = models.ForeignKey(Festival, on_delete=models.CASCADE, related_name='festival_posts')
+
+    #many-to-many relationship
+    post_liked_by = models.ManyToManyField(CustomUser, related_name='liked_posts')
+    post_disliked_by = models.ManyToManyField(CustomUser, related_name='disliked_posts')
+
+
+    class Meta:
+        ordering = ['-time']

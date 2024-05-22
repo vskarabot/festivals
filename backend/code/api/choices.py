@@ -1,6 +1,17 @@
+#
+## First is the value that will be stored in the database, second is the human-readable name
+#
+
 GENDERS = [
     ('M', 'MALE'),
     ('F', 'FEMALE'),
+]
+
+POST_LABELS = [
+    ('travel', 'Travel'),
+    ('lineup', 'Lineup'),
+    ('tips', 'Tips'),
+    ('shitpost', 'Shitpost'),
 ]
 
 COUNTRIES = [

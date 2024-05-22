@@ -2,6 +2,7 @@
     <!-- menu for now -->
     <div>
         <button @click="home">Home</button>
+        <button @click="forum">Forum</button>
         <div>User: <NuxtLink to="/me/profile/">{{ logedUser }}</NuxtLink></div>
         <NuxtLink to="/auth/login/" @click="handleLogout">Logout</NuxtLink>
         <hr>
@@ -12,7 +13,7 @@
 <script setup>
     import authentication from '~/composables/auth'
 
-    const { logout, access, logedUser } = authentication()
+    const { logout, logedUser } = authentication()
 
     const handleLogout = () => {
         logout()
@@ -20,5 +21,12 @@
 
     const home = () => {
         useRouter().replace('/')
+    }
+
+    const forum = () => {
+        useRouter().replace(`/forum/`)
+        .then(() => {
+            reloadNuxtApp()
+        })
     }
 </script>

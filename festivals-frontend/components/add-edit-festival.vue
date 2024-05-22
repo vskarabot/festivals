@@ -69,10 +69,8 @@
         console.log(response.status)
 
         /* SWITCH TO REPLACE so that we don't have to go back to the list */
-        useRouter().replace(`/`)
-        .then(() => {
-            reloadNuxtApp()
-        })
+        if (response.status === 201)
+            useRouter().replace(`/`)
     }
 
     const editFestival = async() => {

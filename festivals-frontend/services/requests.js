@@ -137,8 +137,7 @@ export const activate = async (uid, token) => {
 export const getCurrentUser = async () => {
 
     const { isAuthenticated } = authentication()
-    await isAuthenticated()
-    
+    await isAuthenticated()    
     const { access } = authentication()
 
     const response = await fetch(urls.CURRENT_USER, {
@@ -267,4 +266,139 @@ export const addToFavourites = async (festivalId) => {
     })
 
     return response
+}
+
+
+// GET POSTS - > filtering available
+export const getPosts = async (festivalId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    // for filtering by festival
+    let url = urls.POSTS
+    if (festivalId) {
+        url += `?festival=${festivalId}`
+    }
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+    })
+
+    return response
+}
+
+// GET POST DETAIL
+export const getPostDetail = async (postId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.POST_DETAIL(postId), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        }
+    })
+
+    return response
+
+}
+
+
+// ADD POST
+export const addPost = async (festivalId, post) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.POSTS, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            festival: festivalId,
+            title: post.title,
+            text: post.text,
+            label: post.label,
+        })
+    })
+
+    return response
+}
+
+// LIKE/DISLIKE POST
+export const likePost = async(postId, action) => {
+    
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.POST_DETAIL(postId), {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            'action': action
+        })
+    })
+
+    return response
+}
+
+// DELETE OWN POST
+export const deletePost = async(postId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.POST_DETAIL(postId), {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        }
+    })
+
+    return response
+}
+
+// EDIT POST
+export const editPost = async (festival, postId, data) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    console.log(festival, postId, data.title, data.text, data.label)
+
+    const response = await fetch(urls.POST_DETAIL(postId), {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            festival: festival,
+            title: data.title,
+            text: data.text,
+            label: data.label
+        })
+    })
+
+    return response
+
 }

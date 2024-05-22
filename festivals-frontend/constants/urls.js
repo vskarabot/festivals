@@ -22,3 +22,7 @@ export const CURRENT_USER = BASE_URL + '/auth/users/me/'                   // GE
 // FESTIVAL
 export const FESTIVALS = BASE_URL + '/festivals/'
 export const FESTIVAL_DETAIL = (id) => BASE_URL + `/festivals/${id}`
+
+// POSTS
+export const POSTS = BASE_URL + `/posts/`
+export const POST_DETAIL = (postId) => BASE_URL + `/posts/${postId}`
