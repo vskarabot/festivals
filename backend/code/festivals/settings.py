@@ -62,10 +62,8 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('JWT',),
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=300),
-    'REFRESH_TOKEN_LIFETIME': timedelta(seconds=3600),
-    #'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    #'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 }
 
 #SOCIAL_AUTH_SPOTIFY_KEY = '0f6c25ce98904592812f4e371b104da7'

@@ -3,7 +3,8 @@
 
     <button @click="handleFavourite">{{ computeFavouriteText }}</button>
 
-    <button>Go to festival forum</button>
+    <NuxtLink :to="`/forum/${id}`">Go to festival forum</NuxtLink>
+
     <button @click="edit" v-if="festival.is_mod">Edit</button>
     <p>{{ festival }}</p>
     <h2>{{ festival.name }}</h2>
