@@ -13,8 +13,6 @@
     <button @click="openPost" >Comments</button>
     <hr>
 
-    <!-- TODO Missing edit, comments (specific post page) -->
-
 </template>
 
 <script setup>

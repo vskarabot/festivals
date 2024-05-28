@@ -1,5 +1,5 @@
 <template>
-    <div v-if="post && !post.detail">
+    <div v-if="post">
         {{ post }}
         <h2>{{ post.title }}</h2>
         <h4>{{ post.festival_name }}</h4>
