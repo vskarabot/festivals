@@ -1,35 +1,45 @@
 // authentication data
-import * as services from '../services/requests'
+import * as requests from '../services/requests'
 
 export default function authentication() {
     const access = useCookie('access')
     const refresh = useCookie('refresh')
     const logedUser = useCookie('user')
+    const userId = useCookie('userId')
 
     // login function
-    const setTokens = (acc, ref, usernameOrEmail) => {
+    const setTokens = async (acc, ref) => {
         access.value = acc
         if (ref)
             refresh.value = ref
-        if (usernameOrEmail)
-            logedUser.value = usernameOrEmail
+        
+        // set data for user
+        const response = await requests.getCurrentUser()
+        const responseData = await response.json()
+        
+        // TODO handle if something wrong
+
+        // add to cookies user data
+        logedUser.value = responseData.username
+        userId.value = responseData.id
     }
 
     const logout = () => {
         access.value = null
         refresh.value = null
         logedUser.value = null
+        userId.value = null
     }
 
     // Proactive authentication  (before each request)
     const isAuthenticated = async () => {
 
         // check if token is valid (verify)
-        const tokenValid = await services.verifyToken()
+        const tokenValid = await requests.verifyToken()
 
         if (tokenValid !== 200) {
             // not valid , check if refresh is valid
-            const refreshValid = await services.refreshToken()
+            const refreshValid = await requests.refreshToken()
 
             if (refreshValid !== 200) {
                 // not valid, logout
@@ -45,6 +55,7 @@ export default function authentication() {
         access,
         refresh,
         logedUser,
+        userId,
         setTokens,
         logout,
         isAuthenticated

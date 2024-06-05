@@ -1,12 +1,14 @@
 from django.http import JsonResponse
 from .choices import COUNTRIES
 
-from api.models import Festival, Post
-from api.serializers import FestivalSerializer, PostSerializer
+from api.models import Festival, Post, Chat, Message
+from api.serializers import FestivalSerializer, PostSerializer, ChatSerializer, MessageSerializer
 
 from rest_framework import generics, status, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+from .pusher_client import pusher_client
 
 # Create your views here.
 def countries(request):
@@ -82,8 +84,8 @@ def like_or_dislike(instance, user, action):
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
+    queryset = Post.objects.all()
 
     def perform_update(self, serializer):
         instance = serializer.instance
@@ -94,3 +96,50 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
             like_or_dislike(instance, user, action)
             
         serializer.save()
+
+
+class ChatList(generics.ListCreateAPIView):
+    #permission_classes = (IsAuthenticated,)
+
+    serializer_class = ChatSerializer
+
+    def get_queryset(self):
+        festival = self.kwargs['pk']
+        return Chat.objects.filter(festival=festival)
+    
+    def perform_create(self, serializer):
+        festival_id = self.kwargs['pk']
+        festival = Festival.objects.get(id=festival_id)
+        serializer.save(festival=festival)
+    
+
+
+class MessageList(generics.ListCreateAPIView):
+    #permission_classes = (IsAuthenticated,)
+
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+
+    # check if chat is in the festival
+    def get_queryset(self):
+        try:
+            chat = Chat.objects.get(id=self.kwargs['cpk'], festival=self.kwargs['pk'])
+        except Chat.DoesNotExist:
+            raise serializers.ValidationError('Chat does not exist')
+        return Message.objects.filter(chat=chat)
+    
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        chat_id = self.kwargs['cpk']
+        chat = Chat.objects.get(id=chat_id)
+        
+        # save
+        message = serializer.save(author=user, chat=chat)
+        
+        # send message to pusher to update frontend
+        #### TODO well just exclude is_author field as it is calculated on frontend
+        # probably like this
+        data = serializer.data
+        data.pop('is_author')
+        pusher_client.trigger(f'chat-{message.chat.id}', 'new-message', data)

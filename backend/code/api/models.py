@@ -63,3 +63,28 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-time']
+
+# also add comments
+
+#---------------------------------
+#  CHAT
+
+class Chat(models.Model):
+    name = models.CharField(max_length=50)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    # one-to-many relationship
+    festival = models.ForeignKey(Festival, on_delete=models.CASCADE, related_name='festival_chat')
+
+
+class Message(models.Model):
+    text = models.TextField()
+    time = models.DateTimeField(auto_now_add=True)
+
+    # one-to-many relationship
+    # TODO : maybe we will need to add related_name on author for list of his messages
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='chat_messages')
+
+    
+

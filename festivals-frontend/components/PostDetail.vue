@@ -39,6 +39,7 @@ import { ref } from 'vue'
 
     const edit = () => {
         // state of post to edit (for AddEditPost.vue) -> so we dont have to fetch it again
+        clearNuxtState()
         useState('editPostData', () => props.post)
 
         useRouter().push({

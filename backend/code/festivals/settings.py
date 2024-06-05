@@ -66,10 +66,6 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 }
 
-#SOCIAL_AUTH_SPOTIFY_KEY = '0f6c25ce98904592812f4e371b104da7'
-#SOCIAL_AUTH_SPOTIFY_SECRET = '8b27c880ed7a4ecea90bc7ab0ae7116c'
-#SOCIAL_AUTH_SPOTIFY_SCOPE = ['user-read-email', 'user-read-private']
-#SOCIAL_AUTH_SPOTIFY_EXTRA_DATA = ['first_name', 'last_name']
 
 
 # Application definition

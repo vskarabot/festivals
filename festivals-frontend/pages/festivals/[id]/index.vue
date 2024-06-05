@@ -5,6 +5,10 @@
 
     <NuxtLink :to="`/forum/${id}`">Go to festival forum</NuxtLink>
 
+    <NuxtLink :to="`/festivals/${id}/chats`">Chat</NuxtLink>
+
+    <!-- add link to chat -->
+
     <button @click="edit" v-if="festival.is_mod">Edit</button>
     <p>{{ festival }}</p>
     <h2>{{ festival.name }}</h2>

@@ -112,7 +112,7 @@ export const login = async (data) => {
         console.log(responseData.detail)
     }
     else {
-        setTokens(responseData.access, responseData.refresh, data.usernameOrEmail)
+        setTokens(responseData.access, responseData.refresh)
         return navigateTo('/')
     }
 }
@@ -383,8 +383,6 @@ export const editPost = async (festival, postId, data) => {
     await isAuthenticated()
     const { access } = authentication()
 
-    console.log(festival, postId, data.title, data.text, data.label)
-
     const response = await fetch(urls.POST_DETAIL(postId), {
         method: 'PUT',
         headers: {
@@ -401,4 +399,85 @@ export const editPost = async (festival, postId, data) => {
 
     return response
 
+}
+
+
+
+// CHATS GET
+export const getChats = async(festivalId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.FESTIVAL_CHATS(festivalId), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+    })
+
+    return response
+
+}
+
+// ADD CHAT
+export const addChat = async(festivalId, chatName) => {
+    
+        const { isAuthenticated } = authentication()
+        await isAuthenticated()
+        const { access } = authentication()
+    
+        const response = await fetch(urls.FESTIVAL_CHATS(festivalId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `JWT ${access.value}`
+            },
+            body: JSON.stringify({
+                name: chatName
+            })
+        })
+
+        return response
+}
+
+// MESSAGES GET (api)
+export const getMessages = async(festivalId, chatId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.MESSAGES(festivalId, chatId), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+    })
+
+    return response
+}
+
+// SEND MESSAGE
+export const sendMessage = async(festivalId, chatId, message) => {
+    
+        const { isAuthenticated } = authentication()
+        await isAuthenticated()
+        const { access } = authentication()
+    
+        const response = await fetch(urls.MESSAGES(festivalId, chatId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `JWT ${access.value}`
+            },
+            body: JSON.stringify({
+                text: message
+            })
+        })
+
+        return response
 }
