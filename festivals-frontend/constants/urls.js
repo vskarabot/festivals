@@ -26,3 +26,7 @@ export const FESTIVAL_DETAIL = (id) => BASE_URL + `/festivals/${id}`
 // POSTS
 export const POSTS = BASE_URL + `/posts/`
 export const POST_DETAIL = (postId) => BASE_URL + `/posts/${postId}`
+
+// CHATS
+export const FESTIVAL_CHATS = (festivalId) => BASE_URL + `/festivals/${festivalId}/chats/`
+export const MESSAGES = (festivalId, chatId) => BASE_URL + `/festivals/${festivalId}/chats/${chatId}`

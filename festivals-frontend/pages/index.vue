@@ -4,7 +4,7 @@
     
     <div v-if="festivals">
         <h1>Home page</h1>
-        Didn't find your festival? Create new community for the festival! <NuxtLink to="festivals/add-edit-festival">Add a festival</NuxtLink>
+        Didn't find your festival? Create new community for the festival! <NuxtLink to="/festivals/add-edit-festival">Add a festival</NuxtLink>
 
         <h2>List of "popular" festivals:</h2>
         <div v-for="festival in festivals">

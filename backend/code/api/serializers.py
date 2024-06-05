@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Festival, CustomUser, Post
+from api.models import Festival, CustomUser, Post, Chat, Message
 from djoser.serializers import UserCreateSerializer
 
 
@@ -96,4 +96,27 @@ class PostSerializer(serializers.ModelSerializer):
     
     def get_username(self, obj):
         return obj.author.username
-    
+
+
+class ChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chat
+        fields = ['id', 'name']
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    is_author = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = [
+            'id', 
+            'text', 
+            'time', 
+            'author', 
+            'is_author'
+        ]
+        read_only_fields = ['author']
+
+    def get_is_author(self, obj):
+        return self.context['request'].user == obj.author

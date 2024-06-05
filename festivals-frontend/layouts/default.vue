@@ -2,7 +2,7 @@
     <!-- menu for now -->
     <div>
         <button @click="home">Home</button>
-        <button @click="forum">Forum</button>
+        <button @click="forum">News</button>
         <div>User: <NuxtLink to="/me/profile/">{{ logedUser }}</NuxtLink></div>
         <NuxtLink to="/auth/login/" @click="handleLogout">Logout</NuxtLink>
         <hr>
@@ -25,8 +25,5 @@
 
     const forum = () => {
         useRouter().replace(`/forum/`)
-        .then(() => {
-            reloadNuxtApp()
-        })
     }
 </script>
