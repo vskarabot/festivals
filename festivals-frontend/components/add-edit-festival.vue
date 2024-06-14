@@ -90,9 +90,11 @@
         })
     }
 
-    const handleLocationChanged = (location) => {
-        console.log(location)
+    const handleLocationChanged = (location, properties) => {
         festival.value.lat = location[0]
         festival.value.lon = location[1]
+
+        // properties.text & properties.address -> TODO shrani v bazo naslov
+        console.log(properties)
     }
 </script>

@@ -3,8 +3,10 @@ from api import views
 
 urlpatterns = [
     path('countries/', views.countries),
+
     path('festivals/', views.FestivalList.as_view()),
     path('festivals/<int:pk>', views.FestivalDetail.as_view()),
+    path('hotels/', views.Hotels.as_view()),
 
     path('festivals/<int:pk>/chats/', views.ChatList.as_view()),
     path('festivals/<int:pk>/chats/<int:cpk>', views.MessageList.as_view()),

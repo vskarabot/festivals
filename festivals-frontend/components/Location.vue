@@ -5,11 +5,13 @@
 <script setup>
 import mapboxgl from 'mapbox-gl'
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
-import { ref, onMounted } from 'vue'
 
     // styling of map
     useHead({
-        link: [{ rel: 'stylesheet', href: 'https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' }]
+        link: [
+            { rel: 'stylesheet', href: 'https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css'},
+            { rel: "stylesheet", href: "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css"}
+        ]
     })
 
     const props = defineProps({
@@ -23,11 +25,8 @@ import { ref, onMounted } from 'vue'
     // mapbox constants
     const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoidnM3MDE1IiwiYSI6ImNsdmF4OXkxMDAzZmYyam52bHMzMXkzM2YifQ.COvY-tigswKIlF3DRqURfA'
     const MAP_LOOK = 'mapbox://styles/mapbox/outdoors-v12'
-    const INITIAL_ZOOM = 12
-    const MARKER_COLOR = '#4668F2'
-
-    // booking constants
-    const BOOKING_TOKEN = ''
+    const INITIAL_ZOOM = 16
+    const MARKER_COLOR = 'red'
         
     onMounted(() => {        
         // wait for props to load before map is created with watchEffect
@@ -55,6 +54,7 @@ import { ref, onMounted } from 'vue'
 
         const marker = new mapboxgl.Marker({ color: MARKER_COLOR })
             .setLngLat([lon, lat])
+            .setPopup(new mapboxgl.Popup().setHTML(`<p><b>Festival location</b></p>`))
             .addTo(map)
 
         
@@ -69,7 +69,7 @@ import { ref, onMounted } from 'vue'
             geocoder.on('result', (e) => {
                 marker.setLngLat(e.result.center.reverse())
                 // notify parent component about location change
-                emit('location-changed', e.result.center)
+                emit('location-changed', e.result.center, e.result)
             })
         }
     }

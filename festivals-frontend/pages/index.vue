@@ -1,7 +1,8 @@
 <template>
     <!-- sloted menu -->
     
-    
+    <Search />
+    <p>Filtering -> user favourites, popular, nearby?</p>
     <div v-if="festivals">
         <h1>Home page</h1>
         Didn't find your festival? Create new community for the festival! <NuxtLink to="/festivals/add-edit-festival">Add a festival</NuxtLink>

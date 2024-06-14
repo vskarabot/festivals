@@ -156,7 +156,7 @@ export const getCurrentUser = async () => {
 // MAYBE MAKE AUTHENTICATED FETCH TO REDUCE CODE DUPLICATION
 
 // GET ALL FESTIVALS
-export const getFestivals = async () => {
+export const getFestivals = async (search) => {
     
     // get only method as access can change if token is refreshed
     const { isAuthenticated } = authentication()
@@ -166,7 +166,11 @@ export const getFestivals = async () => {
     // now get the access as there is no possibility that it was changed in the meantime
     const { access } = authentication()
 
-    const response = await fetch(urls.FESTIVALS, {
+    let url = urls.FESTIVALS
+    if (search)
+        url += search
+
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': `JWT ${access.value}`
@@ -193,6 +197,9 @@ export const getFestivalById = async (id) => {
 
     return response
 }
+
+// HOTELS ENDPOINT IS NOT SET IN URLS AND NOT IMPLEMENTED HERE
+// I JUST USED IT IN INDEX.vue
 
 // CREATE NEW FESTIVAL
 export const createFestival = async (data) => {

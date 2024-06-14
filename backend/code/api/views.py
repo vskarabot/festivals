@@ -7,8 +7,10 @@ from api.serializers import FestivalSerializer, PostSerializer, ChatSerializer, 
 from rest_framework import generics, status, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import SearchFilter
 
 from .pusher_client import pusher_client
+from .scraper import scrape_hotels
 
 # Create your views here.
 def countries(request):
@@ -20,6 +22,9 @@ class FestivalList(generics.ListCreateAPIView):
 
     queryset = Festival.objects.all()
     serializer_class = FestivalSerializer
+
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
 
     def perform_create(self, serializer):
         festival = serializer.save()
@@ -51,6 +56,35 @@ class FestivalDetail(generics.RetrieveUpdateDestroyAPIView):
             else:
                 raise serializers.ValidationError('Only mods can change the festival')
             
+
+# for hotels
+class Hotels(generics.ListAPIView):
+    def list(self, request, *args, **kwargs):
+        
+        # check if any important are missing
+        required_params = ['place', 'checkin', 'checkout', 'adults']
+        for param in required_params:
+            if param not in request.query_params:
+                raise serializers.ValidationError(f'Parameter "{param}" is missing!')
+        
+        # make url
+        # place of festival (location would be better name)
+        place = request.query_params.get('place')
+        checkin = request.query_params.get('checkin')
+        checkout = request.query_params.get('checkout')
+        adults = request.query_params.get('adults')
+        rooms = request.query_params.get('rooms', 1)
+        min_ppn = request.query_params.get('min_ppn', 'min')
+        max_ppn = request.query_params.get('max_ppn', 'max')
+        # children = request.query_params.get('children', None) always 0
+        #currency = request.query_params.get('currency', None)
+
+        url = f"https://www.booking.com/searchresults.html?ss={place}&ssne={place}&ssne_untouched={place}&lang=en-us&sb=1&src_elem=sb&src=searchresults&checkin={checkin}&checkout={checkout}&group_adults={adults}&no_rooms={rooms}&group_children=0&selected_currency=EUR&soz=1&lang_changed=1&price%3DEUR-{min_ppn}-{max_ppn}-1"
+
+        # Scrape hotels based on location
+        hotels_data = scrape_hotels(url)
+        return Response(hotels_data)
+
 
 
 class PostList(generics.ListCreateAPIView):

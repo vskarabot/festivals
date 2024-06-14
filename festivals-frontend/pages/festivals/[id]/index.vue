@@ -13,15 +13,19 @@
     <p>{{ festival }}</p>
     <h2>{{ festival.name }}</h2>
     <p>Info: {{ festival.info }}</p>
+    <p>Date: </p>
     <p>Website: <a :href="festival.website">{{ festival.website }}</a></p>
     <p>Latitude: {{ festival.lat }}</p>
     <p>Longitude: {{ festival.lon }}</p>
-    <hr>
+
+    <p>Nearby accomodations: <button @click="getHotels">Scrap</button></p>
+
     <div>
-        <p>Location (for now only location):</p>
-        <p>(TODO: On the same map implement bookings with different parameters.)</p>
+        <p>Location: </p>
         <Location :lat="festival.lat" :lon="festival.lon" :geolocationEnabled="false" />
     </div>
+
+    <Hotels v-if="accomodations" :hotels="accomodations" />
 </template>
 
 <script setup>
@@ -30,6 +34,7 @@
     const { id } = useRoute().params
     const festival = ref('')
     const currentUser = ref('')
+    const accomodations = ref({})
 
     onMounted(async () => {
         // get festival by id
@@ -56,4 +61,25 @@
     const computeFavouriteText = computed(() => {
         return festival.value.is_favourite ? 'Favourite' : 'Add to favourites'
     })
+
+
+    const hotelParams = new URLSearchParams({
+        place: 'Ljubljana',
+        checkin: '2024-7-7',
+        checkout: '2024-7-9',
+        adults: '2',
+        rooms: '1',
+        // TODO optionally price min, max are also sent (in backend implemented)
+        // TODO ordering 
+        // check which paramteres could be also used
+        // maybe even currency
+    })
+
+    const getHotels = async() => {
+        const data = await fetch(`http://localhost:8000/hotels/?${hotelParams.toString()}`)
+    
+        const responseData = await data.json()
+        console.log(responseData)
+        //accomodations.value = responseData
+    }
 </script>
