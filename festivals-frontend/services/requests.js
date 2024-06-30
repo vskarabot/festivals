@@ -53,31 +53,31 @@ export const refreshToken = async () => {
 
 // REGISTER
 export const register = async (data) => {
-    const response = await fetch(urls.REGISTER, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            first_name: data.fName,
-            last_name: data.lName,
-            username: data.username,
-            email: data.email,
-            password: data.password,
-            date_of_birth: data.birthDate,
-            country: data.country,
-            gender: data.selectedGender,
+    try {
+        const response = await $fetch(urls.REGISTER, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                first_name: data.fName,
+                last_name: data.lName,
+                username: data.username,
+                email: data.email,
+                password: data.password,
+                date_of_birth: data.birthDate,
+                country: data.country,
+                gender: data.selectedGender
+            }),
+            ignoreResponseError: true
         })
-    })
 
-    // handle the logic (this weak now)
-    const responseData = await response.json()
-
-    if (responseData.id) {
-        return true
+        return response
+    } catch (error) {
+        return error.data ?? error
     }
-    // handle if it fails
 }
+  
 
 // EMAIL ACTIVATION RESEND
 export const resend = async (email) => {
@@ -94,6 +94,7 @@ export const resend = async (email) => {
 
 // LOGIN
 export const login = async (data) => {
+
     const { setTokens } = authentication()
 
     const response = await fetch(urls.LOGIN, {
@@ -157,15 +158,16 @@ export const getCurrentUser = async () => {
 
 // GET ALL FESTIVALS
 export const getFestivals = async (search) => {
-    
+
     // get only method as access can change if token is refreshed
-    const { isAuthenticated } = authentication()
+    const { isAuthenticated, access } = authentication()
     await isAuthenticated()
 
+    // IMPORTATN if it fails you know the problem ˇ
     // as navigateTo triggers new page load, code from here is not executed if auth.js logs out
     // now get the access as there is no possibility that it was changed in the meantime
-    const { access } = authentication()
-
+    // const { access } = authentication()
+ 
     let url = urls.FESTIVALS
     if (search)
         url += search
@@ -451,13 +453,31 @@ export const addChat = async(festivalId, chatName) => {
 }
 
 // MESSAGES GET (api)
-export const getMessages = async(festivalId, chatId) => {
+export const getInitialMessages = async(festivalId, chatId) => {
 
     const { isAuthenticated } = authentication()
     await isAuthenticated()
     const { access } = authentication()
 
     const response = await fetch(urls.MESSAGES(festivalId, chatId), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+    })
+
+    return response
+}
+
+// LOAD MORE MESSAGES
+export const getMoreMessages = async(url) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

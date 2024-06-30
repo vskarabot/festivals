@@ -1,5 +1,9 @@
 <template>
-    <div id="map" style="width: 700px; height: 450px;"></div>
+    <v-sheet id="map" style="height: 450px;"></v-sheet>
+    <div v-if="props.directions?.geoLines" id="overlay">
+        {{ props.directions.duration }}
+        {{ props.directions.distance }}
+    </div>
 </template>
 
 <script setup>
@@ -17,7 +21,8 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
     const props = defineProps({
         lat: Number,
         lon: Number,
-        geolocationEnabled: Boolean
+        geolocationEnabled: Boolean,
+        directions: Object
     })
 
     const emit = defineEmits(['location-changed'])
@@ -54,8 +59,61 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
 
         const marker = new mapboxgl.Marker({ color: MARKER_COLOR })
             .setLngLat([lon, lat])
-            .setPopup(new mapboxgl.Popup().setHTML(`<p><b>Festival location</b></p>`))
             .addTo(map)
+
+        // TODO : maybe should check the others but leave for now. to many other things to fix/add
+        if (props.directions?.geoLines) {
+            // add route lines
+            map.on('load', () => {
+                map.addSource('route', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'Feature',
+                        'properties': {},
+                        'geometry': {
+                            'type': 'LineString',
+                            'coordinates': props.directions.geoLines
+                        }
+                    }
+                });
+                map.addLayer({
+                    'id': 'route',
+                    'type': 'line',
+                    'source': 'route',
+                    'layout': {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    'paint': {
+                        'line-color': '#005b96',
+                        'line-width': 6,
+                        'line-opacity': 0.6
+                    }
+                });
+            });
+
+            // center map -> we need fitBounds method
+            // takes most south-west and most north-east coordinate and recenters
+
+            // most south-west -> min lon & min lat
+            // most north-east -> max lon & max lat
+            const lonArray = props.directions.geoLines.map(([lon]) => lon)
+            const latArray = props.directions.geoLines.map(([, lat]) => lat)
+            
+            const minLon = lonArray.reduce((a,b) => Math.min(a,b))
+            const maxLon = lonArray.reduce((a,b) => Math.max(a,b))
+            const minLat = latArray.reduce((a,b) => Math.min(a,b))
+            const maxLat = latArray.reduce((a,b) => Math.max(a,b))
+
+            // substract bit more so it's not completely on border
+            const southWest = [minLon-0.1, minLat-0.1]
+            const northEast = [maxLon+0.1, maxLat+0.1]
+
+            // recentre on map
+            map.fitBounds(
+                [southWest, northEast]
+            )
+        }
 
         
         // if add or edit add geolocation
@@ -73,5 +131,16 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
             })
         }
     }
-
 </script>
+
+<style>
+    #overlay {
+        position: absolute;
+        top: 10px; /* Adjust as needed */
+        left: 10px; /* Adjust as needed */
+        background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 1; /* Ensure it appears above the map */
+    }
+</style>

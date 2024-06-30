@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.http import Http404
 from .choices import COUNTRIES
 
 from api.models import Festival, Post, Chat, Message
@@ -8,6 +9,7 @@ from rest_framework import generics, status, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter
+from rest_framework.pagination import PageNumberPagination
 
 from .pusher_client import pusher_client
 from .scraper import scrape_hotels
@@ -34,9 +36,15 @@ class FestivalList(generics.ListCreateAPIView):
 class FestivalDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
-    queryset = Festival.objects.all()
+    #queryset = Festival.objects.all()
     serializer_class = FestivalSerializer
 
+    def get_object(self):
+        try:
+            return Festival.objects.get(id=self.kwargs['pk'])
+        except Festival.DoesNotExist:
+            raise Http404("Festival does not exist")
+    
     def perform_update(self, serializer):
         instance = serializer.instance
         user = self.request.user
@@ -62,24 +70,28 @@ class Hotels(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         
         # check if any important are missing
-        required_params = ['place', 'checkin', 'checkout', 'adults']
+        required_params = ['lat', 'lon', 'checkin', 'checkout', 'adults', 'order']
         for param in required_params:
             if param not in request.query_params:
                 raise serializers.ValidationError(f'Parameter "{param}" is missing!')
         
         # make url
         # place of festival (location would be better name)
-        place = request.query_params.get('place')
+        lat = request.query_params.get('lat')
+        lon = request.query_params.get('lon')
         checkin = request.query_params.get('checkin')
         checkout = request.query_params.get('checkout')
         adults = request.query_params.get('adults')
         rooms = request.query_params.get('rooms', 1)
-        min_ppn = request.query_params.get('min_ppn', 'min')
-        max_ppn = request.query_params.get('max_ppn', 'max')
+        # min not gona be used (only max will be)
+        max_ppn = request.query_params.get('maxPricePerNight', 'max')
+        order = request.query_params.get('order')
         # children = request.query_params.get('children', None) always 0
         #currency = request.query_params.get('currency', None)
 
-        url = f"https://www.booking.com/searchresults.html?ss={place}&ssne={place}&ssne_untouched={place}&lang=en-us&sb=1&src_elem=sb&src=searchresults&checkin={checkin}&checkout={checkout}&group_adults={adults}&no_rooms={rooms}&group_children=0&selected_currency=EUR&soz=1&lang_changed=1&price%3DEUR-{min_ppn}-{max_ppn}-1"
+        #url = f"https://www.booking.com/searchresults.html?ss={place}&ssne={place}&ssne_untouched={place}&lang=en-us&sb=1&src_elem=sb&src=searchresults&checkin={checkin}&checkout={checkout}&group_adults={adults}&no_rooms={rooms}&group_children=0&selected_currency=EUR&soz=1&lang_changed=1&price%3DEUR-max-{max_ppn}-1"
+        # distance at the end is meters from (we set to 20km)
+        url = f"https://www.booking.com/searchresults.html?latitude={lat}&longitude={lon}&lang=en-us&sb=1&src_elem=sb&src=searchresults&checkin={checkin}&checkout={checkout}&group_adults={adults}&no_rooms={rooms}&group_children=0&selected_currency=EUR&soz=1&lang_changed=1&price%3DEUR-max-{max_ppn}-1&order={order}&nflt=distance%3D20000#map_closed"
 
         # Scrape hotels based on location
         hotels_data = scrape_hotels(url)
@@ -147,20 +159,22 @@ class ChatList(generics.ListCreateAPIView):
         serializer.save(festival=festival)
     
 
+class MessageListPagination(PageNumberPagination):
+    page_size = 20
 
 class MessageList(generics.ListCreateAPIView):
     #permission_classes = (IsAuthenticated,)
 
-    queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    pagination_class = MessageListPagination
 
     # check if chat is in the festival
     def get_queryset(self):
         try:
             chat = Chat.objects.get(id=self.kwargs['cpk'], festival=self.kwargs['pk'])
         except Chat.DoesNotExist:
-            raise serializers.ValidationError('Chat does not exist')
-        return Message.objects.filter(chat=chat)
+            raise Http404("Chat does not exist")
+        return Message.objects.filter(chat=chat).order_by('-time')
     
 
     def perform_create(self, serializer):

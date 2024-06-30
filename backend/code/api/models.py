@@ -18,6 +18,7 @@ class CustomUserManager(UserManager):
 
 class CustomUser(AbstractUser):
     objects = CustomUserManager()
+    # username is automatically implemented
     email = models.EmailField(unique=True, error_messages={'unique': 'A user with that email already exists'})
     first_name = models.CharField(max_length=50, blank=False, null=False)
     last_name = models.CharField(max_length=50, blank=False, null=False)

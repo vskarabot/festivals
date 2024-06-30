@@ -1,25 +1,20 @@
 <template>
-    <div v-if="posts">
-        <button @click="addPost" v-if="festivalId">Add post</button>
-        <div v-for="(post, index) in posts">
-            <PostDetail
-                :key="post.id"
-                :index="index"
-                :post="post"
-                @like="reaction('like', post.id, index)"
-                @dislike="reaction('dislike', post.id, index)"
-                @delete="deletePost"
-            />
-        </div>
-    </div>
-    <div v-else><h2>Loading...</h2></div>
+    <v-sheet class="mx-auto" max-width="800">
+        <v-card class="mx-auto rounded-0" variant="flat">
+            <v-card class="mx-auto py-4" max-width="500" flat>
+                <v-btn @click="addPost" v-if="festivalId" prepend-icon="mdi-plus" color="primary">Add post</v-btn>
+            </v-card>
+            <v-sheet v-for="(post, index) in posts">
+                <PostDetail :key="post.id" :index="index" :post="post" @like="reaction('like', post.id, index)"
+                @dislike="reaction('dislike', post.id, index)" @delete="deletePost" />
+            </v-sheet>
+        </v-card>
+    </v-sheet>
+
 </template>
 
 <script setup>
-    import { ref } from 'vue'
     import * as requests from '../services/requests'
-    import { useRoute } from 'vue-router'
-
    
     const festivalId = useRoute().params.id
     const posts = ref([])

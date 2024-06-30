@@ -33,7 +33,7 @@ export default function authentication() {
 
     // Proactive authentication  (before each request)
     const isAuthenticated = async () => {
-
+  
         // check if token is valid (verify)
         const tokenValid = await requests.verifyToken()
 

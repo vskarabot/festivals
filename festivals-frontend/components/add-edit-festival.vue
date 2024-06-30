@@ -1,6 +1,4 @@
 <template>
-    <div>Here we'll add festivals and edit</div>
-    <hr>
     <div>
         <form>
             <input type="text" placeholder="Festival name" v-model="festival.name"></input><br>
@@ -28,8 +26,8 @@
         info: '',
         website: '',
         // default is Ljubljana, in future change to location of a user
-        lat: 14.5057515,
-        lon: 46.0569465
+        lat: 46.0569465,
+        lon: 14.5057515
     })
     
     onMounted(async () => {
@@ -41,6 +39,7 @@
             // fetch data to edit specific festival
             const response = await requests.getFestivalById(id.value)
             festival.value = await response.json()
+            console.log(festival.value.lat, festival.value.lon)
         }
         else {
             buttonText.value = 'Add festival'
@@ -66,7 +65,7 @@
         })
         
         // handle if fail
-        console.log(response.status)
+        //console.log(response.status)
 
         /* SWITCH TO REPLACE so that we don't have to go back to the list */
         if (response.status === 201)
@@ -82,7 +81,7 @@
             lon: festival.value.lon
         })
 
-        console.log(response.status)
+        // handle if not ok
 
         useRouter().replace(`/festivals/${id.value}`)
         .then(() => {
@@ -91,10 +90,13 @@
     }
 
     const handleLocationChanged = (location, properties) => {
-        festival.value.lat = location[0]
-        festival.value.lon = location[1]
+        festival.value.lat = location[1]
+        festival.value.lon = location[0]
+
+        console.log(festival.value.lat, festival.value.lon)
 
         // properties.text & properties.address -> TODO shrani v bazo naslov
-        console.log(properties)
+        // ONLY IF REALLY SAVED!!! -> so really we should save location in the <Location> component where we add
+        //console.log(properties)
     }
 </script>

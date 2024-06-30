@@ -1,12 +1,23 @@
 <template>
-    <div>
-        <form @submit.prevent="login">
-            <input type="text" placeholder="Username or email" v-model="credentials.usernameOrEmail"></input>
-            <input type="password" placeholder="Password" v-model="credentials.password"></input>
-            <button type="submit">Login</button>
-        </form>
-        <p>Don't have an account? <NuxtLink to="/auth/register">Register</NuxtLink></p>
-    </div>
+    <v-sheet
+        class="pa-4 text-center mx-auto"
+        max-width="600"
+        rounded="lg"
+        width="100%"
+    >
+        <v-card class="mx-auto px-8 py-8">
+            <h1>Welcome!</h1>
+            <br>
+            <v-form @submit.prevent="login">
+                <v-text-field v-model="credentials.usernameOrEmail" label="Username or email" clearable variant="outlined"></v-text-field>
+                <v-text-field type="password" v-model="credentials.password" label="Password" clearable variant="outlined"></v-text-field>
+                <v-btn type="submit" color="primary" class="d-block mx-auto">LOGIN</v-btn>
+
+                <br>
+                <p class="text-center">Don't have an account? <NuxtLink to="/auth/register">Sign-in</NuxtLink></p>
+            </v-form>
+        </v-card>
+    </v-sheet>
 </template>
 
 <script setup>
@@ -22,7 +33,9 @@ import * as requests from '../services/requests'
 
     // responseData only if error i think
     const login = async () => {
-        const responseData = await requests.login(credentials.value)
+        if (credentials.value.password && credentials.value.password) {
+            const responseData = await requests.login(credentials.value)
+        }
     }
 </script>
 

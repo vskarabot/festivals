@@ -18,9 +18,15 @@ def scrape_hotels(url):
     hotels_data = []
     # Loop over the hotel elements and extract the desired data
     for hotel in hotels:
+        image = hotel.find('img', {'data-testid': 'image'})
         name = hotel.find('div', {'data-testid': 'title'})
         price = hotel.find('span', {'data-testid': 'price-and-discounted-price'})
-        review = hotel.find('div', {'data-testid': 'review-score'})
+        review = hotel.find('div', {'data-testid': 'review-score'}) or "No reviews yet"
+        if review != "No reviews yet":
+            review = review.text.split()[1:-1]
+            #middle = ' '.join(review[1:-1]) -> maybe use this for name idk
+            review_str = f"{review[0]}/10 ({review[-1]} reviews)"
+        
         link = hotel.find('a', {'data-testid': 'title-link'})
         distance_from = hotel.find('span', {'data-testid': 'distance'})
         location = hotel.find('span', {'data-testid': 'address'})
@@ -30,14 +36,15 @@ def scrape_hotels(url):
         
         hotels_data.append(
             {
+                'image': image.get('src'),
                 'name': name.text,
                 'price': price.text,
                 # actual array to make it simpler on frontend -> "ocena", "ocena z besedo", "število reviewev"
                 # TODO - right now there can be 3 indexes - instead of second being worded it can say Review score
                 # TODO - right now it can also be "Very" "good"
-                'review': [review.text.split()[1:-1][0], review.text.split()[1:-1][-1]],
+                'review': review_str,
                 'link': link.get('href'),
-                'distance': distance_from.text,
+                'distance': ' '.join(distance_from.text.split()[0:2]),
                 'location': location.text
             }
         )

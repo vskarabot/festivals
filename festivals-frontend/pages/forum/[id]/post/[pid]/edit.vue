@@ -17,35 +17,18 @@
 
     onMounted(() => {
         id.value = useRoute().params.id
-        
-        try {
-            const state = useState('editPostData')
-            post.value.title = state.value.title
-            post.value.text = state.value.text
-            post.value.label = state.value.label
-        // if values not found (refresh or direct access) -> redirect
-        } catch (e) {
-            useRouter().replace({
-                name: 'forum-id-post-pid',
-                params: { pid: post.value.id }
-            })
-        }
     })
     
     const edit = async() => {
         // only add for now
         const response = await requests.editPost(id.value, useRoute().params.pid, post.value)
         const responseData = await response.json()
-        post.value = responseData
-        
+        post.value = responseData        
         
         // handle if ok
         console.log(responseData)
         
         // if ok reroute (where????)
-        useRouter().push({
-            name: 'forum-id-post-pid',
-            params: { pid: post.value.id }
-        })
+        useRouter().back()
     }
 </script>
