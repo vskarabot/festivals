@@ -1,50 +1,41 @@
 <template>
-    <v-sheet
-      prepend-icon="mdi-directions"
-      title="Directions"
-    >
-    <v-divider></v-divider>
-      <v-card-text>
-        <v-row dense>
-          <v-col
-            cols="12"
-            sm="9"
-          >
-              <mapbox-search-box
-                
-                access-token='pk.eyJ1IjoidnM3MDE1IiwiYSI6ImNsdmF4OXkxMDAzZmYyam52bHMzMXkzM2YifQ.COvY-tigswKIlF3DRqURfA'
-                proximity="0,0"
-              />
-          </v-col>
-          <v-col
-            cols="12"
-            sm="3"
-            class="text-center"
-          >
-            <v-btn-toggle v-model="travelOption">
-              <v-btn value="driving"><v-icon icon="mdi-car"></v-icon></v-btn>
-              <v-btn value="walking"><v-icon icon="mdi-walk"></v-icon></v-btn>
-            </v-btn-toggle>
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-card-actions v-if="stepsArray.length">
-        <v-btn color="warning" @click="hideDirections" class="text-left">
-          Hide/Show
-        </v-btn>
-      </v-card-actions>
-      <v-sheet v-if="showDirections && stepsArray.length">
-        Steps:
-        <v-card-text>
-          {{ stepsArray }}
-        </v-card-text>
+  <v-sheet prepend-icon="mdi-directions">
+    <!-- class is for removing padding and margin because it is wraped and has double values -->
+    <v-card-text class="px-0 py-0">
+      <v-row dense>
+        <v-col cols="1" class="px-0 py-0 d-flex align-center justify-center">
+          <v-icon icon="mdi-car" />
+        </v-col>
+        <v-col cols="11">
+          <mapbox-search-box :access-token="runtimeConfig.public.mapboxToken" proximity="0,0" />
+        </v-col>
+      </v-row>
+    </v-card-text>
+    <v-card v-if="showDirections && stepsArray.length" variant="outlined" color="purple-darken-4" class="my-1">
+      <v-sheet>
+        <v-card-text class="font-weight-bold">Directions:</v-card-text>
+        <v-divider></v-divider>
+        <v-virtual-scroll :height="300" :items="stepsArray">
+          <template v-slot:default="step">
+            <v-card-text class="py-1">
+              {{ step.index + 1 }}. {{ step.item }}
+            </v-card-text>
+          </template>
+        </v-virtual-scroll>
       </v-sheet>
-    </v-sheet>
+    </v-card>
+    <v-card-actions v-if="stepsArray.length" class="px-0 py-0">
+      <v-btn variant="tonal" color="purple-darken-4" @click="hideDirections">
+        {{ showDirections ? 'Hide' : 'Show' }}
+      </v-btn>
+    </v-card-actions>
+  </v-sheet>
 </template>
 
 <script setup>
-    const travelOption = ref('driving')
-    const endLocation = ref('')
+    const runtimeConfig = useRuntimeConfig()
+
+    const startLocation = ref('')
 
     const stepsArray = ref([])
     const distance = ref('')
@@ -72,7 +63,7 @@
 
       // TODO (not really) overview -> simplified ; 
       // if needed we'll change but it is a lot of data to show perfect path
-      const response = await $fetch(`https://api.mapbox.com/directions/v5/mapbox/${travelOption.value}/${props.lon}%2C${props.lat}%3B${endLocation.lon}%2C${endLocation.lat}?alternatives=false&geometries=geojson&language=en&overview=simplified&steps=true&access_token=pk.eyJ1IjoidnM3MDE1IiwiYSI6ImNsdmF4M2tmMzAyaWUyanJzcHc2bjA4emIifQ.s6PCMCZ_MgHzrI5E29wlWg`)
+      const response = await $fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${startLocation.lon}%2C${startLocation.lat}%3B${props.lon}%2C${props.lat}?alternatives=false&geometries=geojson&language=en&overview=simplified&steps=true&access_token=${runtimeConfig.public.mapboxToken}`)
       if (response.code === "Ok") {
         
         distance.value = response.routes[0].distance
@@ -102,8 +93,8 @@
       searchBox.addEventListener('retrieve', (e) => {
         const feature = e.detail
         // again wrong order from search-box so lat is in [1] and lon in [0]
-        endLocation.lat = feature.features[0].geometry.coordinates[1]
-        endLocation.lon = feature.features[0].geometry.coordinates[0]
+        startLocation.lat = feature.features[0].geometry.coordinates[1]
+        startLocation.lon = feature.features[0].geometry.coordinates[0]
 
         getDirections()
       })

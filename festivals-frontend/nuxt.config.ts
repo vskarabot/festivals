@@ -9,13 +9,16 @@ export default defineNuxtConfig({
     transpile: ['vuetify'],
   },
   plugins: [
-    '@/plugins/vuetify.ts'
+    '@/plugins/vuetify.ts',
+    '@/plugins/firebase.ts'
   ],
   devtools: { enabled: true },
   modules: [
     'nuxt-mapbox'
   ],
-  mapbox: {
-    accessToken: 'pk.eyJ1IjoidnM3MDE1IiwiYSI6ImNsdmF4OXkxMDAzZmYyam52bHMzMXkzM2YifQ.COvY-tigswKIlF3DRqURfA'
+  runtimeConfig: {
+    public: {
+      mapboxToken: process.env.MAPBOX_TOKEN
+    }
   }
 })

@@ -7,13 +7,21 @@
                     <v-responsive aspect-ratio="1">
                         <v-btn 
                             @click="newChat" 
-                            prepend-icon="mdi-plus-circle-outline" 
                             class="w-100 h-100"
                             color="primary"
+                            rounded="xl"
                         >
-                            Add new
+                        <v-row>
+                            <v-col>
+                                <v-icon class="text-center" icon="mdi-plus-circle-outline"></v-icon>
+                                <v-card-title>Add new</v-card-title>
+                            </v-col>
+                        </v-row>
                         </v-btn>
                     </v-responsive>
+                </v-col>
+                <v-col cols="6" class="d-flex text-center align-center">
+                    <p>Bring people together by sharing your thoughts and planning meetups!</p>
                 </v-col>
             </v-row>
             <v-row>

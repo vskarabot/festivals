@@ -7,7 +7,7 @@
         <v-btn
           prepend-icon="mdi-bed"
           color="primary"
-          text="Accomodations"
+          text="Places to stay"
           variant="tonal"
           v-bind="activatorProps"
         ></v-btn>
@@ -15,13 +15,12 @@
 
       <v-card
         prepend-icon="mdi-bed"
-        title="Booking"
+        title="Accomodations"
       >
         <v-card-text>
           <v-row dense>
             <v-col
               cols="12"
-              md="4"
               sm="6"
             >
                 <v-text-field
@@ -32,17 +31,33 @@
                     label="Number of people" 
                     variant="outlined"
                     min="1"
-                    max="6"
+                    max="10"
                 />
             </v-col>
 
             <v-col
               cols="12"
-              md="4"
+              sm="6"
+            >
+                <v-text-field
+                    v-model="hotelReactiveOptions.rooms"
+                    prepend-icon="mdi-door"
+                    maxlength="1" 
+                    type="number" 
+                    label="Number of rooms" 
+                    variant="outlined"
+                    min="1"
+                    max="4"
+                />
+            </v-col>
+
+            <v-col
+              cols="12"
               sm="6"
             >
               <v-text-field
                 v-model="hotelReactiveOptions.checkin"
+                prepend-icon="mdi-check"
                 label="Checkin date"
                 type="date"
                 variant="outlined"
@@ -52,11 +67,11 @@
 
             <v-col
               cols="12"
-              md="4"
               sm="6"
             >
               <v-text-field
                 v-model="hotelReactiveOptions.checkout"
+                prepend-icon="mdi-check-all"
                 label="Checkout date"
                 type="date"
                 variant="outlined"
@@ -182,6 +197,7 @@
         lat: props.options.lat,
         lon: props.options.lon,
         adults: props.options.adults,
+        rooms: props.options.rooms,
         checkin: props.options.checkin,
         checkout: props.options.checkout,
         maxPricePerNight: props.options.maxPricePerNight,

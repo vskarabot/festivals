@@ -8,32 +8,42 @@ def scrape_hotels(url):
         'Accept-Language': 'en-US, en;q=0.5'
     }
 
-    response = requests.get(url, headers=headers)
+    try:
+        response = requests.get(url, headers=headers)
+    except requests.exceptions.RequestException as e:
+        return {'error': f"Oops. {e}"}
+
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # Find all the hotel elements in the HTML document
     hotels = soup.findAll('div', {'data-testid': 'property-card'})
+    if not hotels:
+        return {'error': 'No accomodations found :('}
 
     hotels_data = []
     # Loop over the hotel elements and extract the desired data
     for hotel in hotels:
-        image = hotel.find('img', {'data-testid': 'image'})
+        try:
+            image = hotel.find('img', {'data-testid': 'image'})
+        except AttributeError:
+            image = 'No image'
+
         name = hotel.find('div', {'data-testid': 'title'})
         price = hotel.find('span', {'data-testid': 'price-and-discounted-price'})
-        review = hotel.find('div', {'data-testid': 'review-score'}) or "No reviews yet"
-        if review != "No reviews yet":
+        
+        try:
+            review = hotel.find('div', {'data-testid': 'review-score'})
             review = review.text.split()[1:-1]
-            #middle = ' '.join(review[1:-1]) -> maybe use this for name idk
             review_str = f"{review[0]}/10 ({review[-1]} reviews)"
+        except:
+            review_str = 'No reviews yet'
+        
         
         link = hotel.find('a', {'data-testid': 'title-link'})
         distance_from = hotel.find('span', {'data-testid': 'distance'})
         location = hotel.find('span', {'data-testid': 'address'})
 
-        # we need name - done, price - ok, rating - ok, link - ok, distance from festival location - done and location ???
-        # we dont need (days, number of people) as it will be passed as params from frontend       
-        
         hotels_data.append(
             {
                 'image': image.get('src'),

@@ -223,6 +223,9 @@ export const createFestival = async (data) => {
             website: data.website,
             lat: data.lat,
             lon: data.lon,
+            date_start: data.date_start,
+            date_end: data.date_end,
+            img: data.img
         })
     })
 
@@ -249,6 +252,9 @@ export const updateFestival = async (id, data) => {
             website: data.website,
             lat: data.lat,
             lon: data.lon,
+            date_start: data.date_start,
+            date_end: data.date_end,
+            img: data.img
         })
     })
     
@@ -279,7 +285,7 @@ export const addToFavourites = async (festivalId) => {
 
 
 // GET POSTS - > filtering available
-export const getPosts = async (festivalId) => {
+export const getPosts = async (festivalId, params) => {
 
     const { isAuthenticated } = authentication()
     await isAuthenticated()
@@ -288,8 +294,10 @@ export const getPosts = async (festivalId) => {
     // for filtering by festival
     let url = urls.POSTS
     if (festivalId) {
-        url += `?festival=${festivalId}`
+        url += `?festival=${festivalId}&`
     }
+    
+    url += params
 
     const response = await fetch(url, {
         method: 'GET',
@@ -431,6 +439,25 @@ export const getChats = async(festivalId) => {
 
 }
 
+// CHAT GET DETAILS
+export const chatDetails = async(chatId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.CHAT_DETAIL(chatId), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+    })
+
+    return response
+
+}
+
 // ADD CHAT
 export const addChat = async(festivalId, chatName) => {
     
@@ -507,4 +534,93 @@ export const sendMessage = async(festivalId, chatId, message) => {
         })
 
         return response
+}
+
+
+// COMMENTS
+// GET
+export const getComments = async(postId, params)  => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const url = urls.POST_COMMENTS(postId) + params
+
+    const response = await $fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        }
+    })
+
+    return response
+}
+
+// ADD LEVEL 1 COMMENT if only postId, text
+// ADD LEVEL x if also parent
+export const addComment = async (postId, text, parent) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const body = {post: postId, text: text}
+    if (parent) {
+        body.parent = parent
+    }
+
+    const response = await fetch(urls.POST_COMMENTS(postId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify(body)
+    })
+
+    return response
+}
+
+// "DELETE" COMMENT -> actually update the value to deleted=true, so we can still display replied comments
+export const quazyDeleteComment = async (commentId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.DELETE_COMMENT(commentId), {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            deleted: true
+        })
+    })
+
+    return response
+}
+
+// LIKE/DISLIKE COMMENT
+export const likeComment = async(commentId, action) => {
+    
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.DELETE_COMMENT(commentId), {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            'action': action
+        })
+    })
+
+    return response
 }

@@ -1,14 +1,16 @@
 <template>
     <v-sheet id="map" style="height: 450px;"></v-sheet>
-    <div v-if="props.directions?.geoLines" id="overlay">
-        {{ props.directions.duration }}
-        {{ props.directions.distance }}
-    </div>
+    <v-card v-if="props.directions?.geoLines" id="overlay">
+        <v-icon icon="mdi-car"></v-icon>
+        <b>&nbsp;{{ timeOutput }}</b><br> {{ kiloms }}
+    </v-card>
 </template>
 
 <script setup>
 import mapboxgl from 'mapbox-gl'
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
+
+    const runtimeConfig = useRuntimeConfig()
 
     // styling of map
     useHead({
@@ -28,11 +30,9 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
     const emit = defineEmits(['location-changed'])
 
     // mapbox constants
-    const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoidnM3MDE1IiwiYSI6ImNsdmF4OXkxMDAzZmYyam52bHMzMXkzM2YifQ.COvY-tigswKIlF3DRqURfA'
     const MAP_LOOK = 'mapbox://styles/mapbox/outdoors-v12'
     const INITIAL_ZOOM = 16
-    const MARKER_COLOR = 'red'
-        
+
     onMounted(() => {        
         // wait for props to load before map is created with watchEffect
         watchEffect(() => {
@@ -45,10 +45,51 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
         })
     })
 
+    const kiloms = computed(() => {
+        return (parseInt(props.directions.distance) / 1000).toFixed(2) + " km"
+    })
+
+    const timeOutput = computed(() => {
+        if (props.directions.duration) {
+            const time = secsToDayHourMinute(props.directions.duration)
+            const days = time["days"]
+            const hours = time["hours"]
+            const minutes = time["minutes"]
+
+            const daysStr = days ? `${days} day${days > 1 ? 's' : ''}` : ''
+            const hoursStr = `${hours} hour${hours > 1 ? 's' : ''}`
+            const minutesStr = `${minutes} minute${minutes > 1 ? 's' : ''}`
+
+            if (days) {
+                return `${daysStr}, ${hoursStr}, ${minutesStr}`
+            } 
+            else if (hours) {
+                return `${hoursStr}, ${minutesStr}`
+            }
+            else {
+                return `${minutesStr}`
+            }
+        }
+    })
+
+    const secsToDayHourMinute = () => {
+        let seconds = props.directions.duration
+        const days = Math.floor(seconds / (24 * 3600))
+        seconds %= 24 * 3600
+        const hours = Math.floor(seconds / 3600)
+        seconds %= 3600
+        const minutes = Math.floor(seconds / 60)
+        return {
+            days,
+            hours,
+            minutes
+        }        
+    }
+
     // map, marker has [lon, lat]
     // for some reaason geocoder uses [lat, lon]
     const initializeMap = (lat, lon, geolocationEnabled) => {
-        mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN
+        mapboxgl.accessToken = runtimeConfig.public.mapboxToken
 
         const map = new mapboxgl.Map({
             container: 'map',
@@ -57,7 +98,9 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
             zoom: INITIAL_ZOOM
         })
 
-        const marker = new mapboxgl.Marker({ color: MARKER_COLOR })
+        let el = document.createElement('div')
+        el.className = 'marker img1'
+        const marker = new mapboxgl.Marker(el)
             .setLngLat([lon, lat])
             .addTo(map)
 
@@ -92,6 +135,10 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
                 });
             });
 
+            new mapboxgl.Marker()
+                .setLngLat(props.directions.geoLines[0])
+                .addTo(map)
+
             // center map -> we need fitBounds method
             // takes most south-west and most north-east coordinate and recenters
 
@@ -106,8 +153,8 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
             const maxLat = latArray.reduce((a,b) => Math.max(a,b))
 
             // substract bit more so it's not completely on border
-            const southWest = [minLon-0.1, minLat-0.1]
-            const northEast = [maxLon+0.1, maxLat+0.1]
+            const southWest = [minLon, minLat]
+            const northEast = [maxLon, maxLat]
 
             // recentre on map
             map.fitBounds(
@@ -119,7 +166,7 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
         // if add or edit add geolocation
         if (geolocationEnabled) {
             const geocoder = new MapboxGeocoder({
-                accessToken: MAPBOX_ACCESS_TOKEN,
+                accessToken: runtimeConfig.public.mapboxToken,
                 mapboxgl: mapboxgl
             })
             map.addControl(geocoder)
@@ -142,5 +189,19 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
         padding: 10px;
         border-radius: 5px;
         z-index: 1; /* Ensure it appears above the map */
+        text-align: center;
+    }
+
+    .marker {
+        background-size: cover;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        background-color: white;
+    }
+
+    .img1 {
+        background-image: url(/assets/music-circle-outline.png);
     }
 </style>
