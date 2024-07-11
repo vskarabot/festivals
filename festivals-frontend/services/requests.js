@@ -53,31 +53,31 @@ export const refreshToken = async () => {
 
 // REGISTER
 export const register = async (data) => {
-    const response = await fetch(urls.REGISTER, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            first_name: data.fName,
-            last_name: data.lName,
-            username: data.username,
-            email: data.email,
-            password: data.password,
-            date_of_birth: data.birthDate,
-            country: data.country,
-            gender: data.selectedGender,
+    try {
+        const response = await $fetch(urls.REGISTER, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                first_name: data.fName,
+                last_name: data.lName,
+                username: data.username,
+                email: data.email,
+                password: data.password,
+                date_of_birth: data.birthDate,
+                country: data.country,
+                gender: data.selectedGender
+            }),
+            ignoreResponseError: true
         })
-    })
 
-    // handle the logic (this weak now)
-    const responseData = await response.json()
-
-    if (responseData.id) {
-        return true
+        return response
+    } catch (error) {
+        return error.data ?? error
     }
-    // handle if it fails
 }
+  
 
 // EMAIL ACTIVATION RESEND
 export const resend = async (email) => {
@@ -94,6 +94,7 @@ export const resend = async (email) => {
 
 // LOGIN
 export const login = async (data) => {
+
     const { setTokens } = authentication()
 
     const response = await fetch(urls.LOGIN, {
@@ -156,17 +157,22 @@ export const getCurrentUser = async () => {
 // MAYBE MAKE AUTHENTICATED FETCH TO REDUCE CODE DUPLICATION
 
 // GET ALL FESTIVALS
-export const getFestivals = async () => {
-    
+export const getFestivals = async (search) => {
+
     // get only method as access can change if token is refreshed
-    const { isAuthenticated } = authentication()
+    const { isAuthenticated, access } = authentication()
     await isAuthenticated()
 
+    // IMPORTATN if it fails you know the problem ˇ
     // as navigateTo triggers new page load, code from here is not executed if auth.js logs out
     // now get the access as there is no possibility that it was changed in the meantime
-    const { access } = authentication()
+    // const { access } = authentication()
+ 
+    let url = urls.FESTIVALS
+    if (search)
+        url += search
 
-    const response = await fetch(urls.FESTIVALS, {
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': `JWT ${access.value}`
@@ -194,6 +200,9 @@ export const getFestivalById = async (id) => {
     return response
 }
 
+// HOTELS ENDPOINT IS NOT SET IN URLS AND NOT IMPLEMENTED HERE
+// I JUST USED IT IN INDEX.vue
+
 // CREATE NEW FESTIVAL
 export const createFestival = async (data) => {
 
@@ -214,6 +223,9 @@ export const createFestival = async (data) => {
             website: data.website,
             lat: data.lat,
             lon: data.lon,
+            date_start: data.date_start,
+            date_end: data.date_end,
+            img: data.img
         })
     })
 
@@ -240,6 +252,9 @@ export const updateFestival = async (id, data) => {
             website: data.website,
             lat: data.lat,
             lon: data.lon,
+            date_start: data.date_start,
+            date_end: data.date_end,
+            img: data.img
         })
     })
     
@@ -270,7 +285,7 @@ export const addToFavourites = async (festivalId) => {
 
 
 // GET POSTS - > filtering available
-export const getPosts = async (festivalId) => {
+export const getPosts = async (festivalId, params) => {
 
     const { isAuthenticated } = authentication()
     await isAuthenticated()
@@ -279,8 +294,10 @@ export const getPosts = async (festivalId) => {
     // for filtering by festival
     let url = urls.POSTS
     if (festivalId) {
-        url += `?festival=${festivalId}`
+        url += `?festival=${festivalId}&`
     }
+    
+    url += params
 
     const response = await fetch(url, {
         method: 'GET',
@@ -422,6 +439,25 @@ export const getChats = async(festivalId) => {
 
 }
 
+// CHAT GET DETAILS
+export const chatDetails = async(chatId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.CHAT_DETAIL(chatId), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+    })
+
+    return response
+
+}
+
 // ADD CHAT
 export const addChat = async(festivalId, chatName) => {
     
@@ -444,13 +480,31 @@ export const addChat = async(festivalId, chatName) => {
 }
 
 // MESSAGES GET (api)
-export const getMessages = async(festivalId, chatId) => {
+export const getInitialMessages = async(festivalId, chatId) => {
 
     const { isAuthenticated } = authentication()
     await isAuthenticated()
     const { access } = authentication()
 
     const response = await fetch(urls.MESSAGES(festivalId, chatId), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+    })
+
+    return response
+}
+
+// LOAD MORE MESSAGES
+export const getMoreMessages = async(url) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -480,4 +534,93 @@ export const sendMessage = async(festivalId, chatId, message) => {
         })
 
         return response
+}
+
+
+// COMMENTS
+// GET
+export const getComments = async(postId, params)  => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const url = urls.POST_COMMENTS(postId) + params
+
+    const response = await $fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        }
+    })
+
+    return response
+}
+
+// ADD LEVEL 1 COMMENT if only postId, text
+// ADD LEVEL x if also parent
+export const addComment = async (postId, text, parent) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const body = {post: postId, text: text}
+    if (parent) {
+        body.parent = parent
+    }
+
+    const response = await fetch(urls.POST_COMMENTS(postId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify(body)
+    })
+
+    return response
+}
+
+// "DELETE" COMMENT -> actually update the value to deleted=true, so we can still display replied comments
+export const quazyDeleteComment = async (commentId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.DELETE_COMMENT(commentId), {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            deleted: true
+        })
+    })
+
+    return response
+}
+
+// LIKE/DISLIKE COMMENT
+export const likeComment = async(commentId, action) => {
+    
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await fetch(urls.DELETE_COMMENT(commentId), {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            'action': action
+        })
+    })
+
+    return response
 }

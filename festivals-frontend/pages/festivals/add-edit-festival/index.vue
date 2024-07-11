@@ -1,3 +1,3 @@
 <template>
-    <add-edit-festival />
+    <AddEditFestival />
 </template>

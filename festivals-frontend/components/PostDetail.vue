@@ -1,27 +1,134 @@
 <template>
-    {{ post }}
-    <h2>{{ post.title }}</h2>
-    <h4>{{ post.festival_name }}</h4>
-    <button @click="emitEvent('like')">Like</button>
-    {{ post.number_of_likes }}
-    <button @click="emitEvent('dislike')">Dislike</button>
-    {{ post.number_of_dislikes }}
-    
-    
-    <button @click="edit" v-if="post.is_author">Edit</button>
-    <button @click="emitEvent('delete')" v-if="post.is_author || post.can_delete">Delete</button>
-    <button @click="openPost" >Comments</button>
-    <hr>
+    <v-sheet class="mx-auto" max-width="500">
+        <v-divider></v-divider>
+        
+        <v-bottom-sheet v-model="showBottomSheet" inset>
+            <v-list>
+                <v-list-item
+                    prepend-icon="mdi-bookmark"
+                    title="Save"
+                    @click="showBottomSheet = false"
+                ></v-list-item>
+                <v-list-item
+                    v-if="post.is_author"
+                    prepend-icon="mdi-pencil"
+                    title="Edit"
+                    @click="edit"
+                ></v-list-item>
+                <v-list-item
+                    v-if="post.is_author || post.can_delete"
+                    prepend-icon="mdi-delete"
+                    title="Delete"
+                    @click="emitEvent('delete')"
+                ></v-list-item>
+            </v-list>
+        </v-bottom-sheet>
+        
+        <v-card :to="`/forum/${props.post.festival}/post/${props.post.id}`" class="mx-auto" variant="flat" rounded="xl">
+            <template v-slot:prepend>
+                <v-chip
+                    variant="text"
+                    class="ma-0 pa-0"
+                >
+                    <v-icon icon="mdi-account" class="mr-1"></v-icon>
+                    {{ user }}
+                    <span class="mx-2">•</span>
+                </v-chip>
 
+                <v-card-subtitle class="my-0 py-0">
+                    <NuxtLink :to="{ name: 'festivals-id', params: { id: `${post.festival}`} }">
+                        <v-chip
+                            variant="outlined"
+                            class="px-0"
+                            rounded="sm"
+                        >
+                            {{ post.festival_name }},
+                        </v-chip>
+                    </NuxtLink>
+                    <v-chip
+                        variant="text"
+                        class="px-0"
+                        rounded="sm"
+                    >
+                        &nbsp;{{ post.time_string }}
+                    </v-chip>
+                    <span v-if="post.edited">&nbsp;(edited)</span>
+                </v-card-subtitle>
+            
+            </template>
+            <template v-slot:append>
+                <ChipLabel :label="post.label" />
+                <v-icon class="ml-2" icon="mdi-dots-horizontal" @click.prevent="showBottomSheet=true"></v-icon>
+            </template>
+            <v-card-title>{{ post.title }}</v-card-title>
+            <v-card-text>{{ post.text }}</v-card-text>
+            <v-card-actions>
+                <v-btn 
+                    v-if="post.user_likes" 
+                    color="primary" 
+                    size="small" 
+                    rounded 
+                    variant="elevated" 
+                    prepend-icon="mdi-thumb-up" 
+                    @click.prevent="emitEvent('like')"
+                >
+                {{ post.number_of_likes }}
+                </v-btn>
+                <v-btn 
+                    v-else 
+                    size="small" 
+                    :color="hoverLike ? 'primary' : 'blue-grey-darken-1'"
+                    :variant="hoverLike ? 'outlined' : 'tonal'" 
+                    rounded
+                    prepend-icon="mdi-thumb-up-outline" 
+                    @click.prevent="emitEvent('like')"
+                    @mouseover="hoverLike = true"
+                    @mouseleave="hoverLike = false"
+                >
+                {{ post.number_of_likes }}
+                </v-btn>
+                
+                <v-btn 
+                    v-if="post.user_dislikes" 
+                    color="red" 
+                    size="small" 
+                    rounded 
+                    variant="elevated" 
+                    prepend-icon="mdi-thumb-down" 
+                    @click.prevent="emitEvent('dislike')"
+                >
+                {{ post.number_of_dislikes }}
+                </v-btn>
+                <v-btn 
+                    v-else 
+                    size="small" 
+                    :color="hoverDislike ? 'red' : 'blue-grey-darken-1'"
+                    :variant="hoverDislike ? 'outlined' : 'tonal'" 
+                    rounded
+                    prepend-icon="mdi-thumb-down-outline" 
+                    @click.prevent="emitEvent('dislike')"
+                    @mouseover="hoverDislike = true"
+                    @mouseleave="hoverDislike = false"
+                >
+                {{ post.number_of_dislikes }}
+                </v-btn>
+                
+                <v-btn width="100" size="small" color="blue-grey-darken-1" @click.prevent="openPost" variant="tonal" rounded prepend-icon="mdi-comment">{{ post.number_of_comments }}</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-sheet>
 </template>
 
 <script setup>
-import { ref } from 'vue'
 
     const props = defineProps({
         post: Object,
         index: Number
     })
+
+    const showBottomSheet = ref(false)
+    const hoverLike = ref(false)
+    const hoverDislike = ref(false)
 
     const emit = defineEmits(['like', 'dislike', 'delete'])
 
@@ -29,6 +136,9 @@ import { ref } from 'vue'
         emit(action, props.post.id, props.index)
     }
 
+    const user = computed(() => {
+        return props.post.is_author ? 'Me' : props.post.username
+    })
 
     const openPost = () => {
         useRouter().push({
@@ -38,9 +148,7 @@ import { ref } from 'vue'
     }
 
     const edit = () => {
-        // state of post to edit (for AddEditPost.vue) -> so we dont have to fetch it again
-        clearNuxtState()
-        useState('editPostData', () => props.post)
+        showBottomSheet.value = false
 
         useRouter().push({
             name: 'forum-id-post-pid-edit',
@@ -48,3 +156,10 @@ import { ref } from 'vue'
         })
     }
 </script>
+
+<style>
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+</style>

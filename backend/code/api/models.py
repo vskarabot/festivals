@@ -18,6 +18,7 @@ class CustomUserManager(UserManager):
 
 class CustomUser(AbstractUser):
     objects = CustomUserManager()
+    # username is automatically implemented
     email = models.EmailField(unique=True, error_messages={'unique': 'A user with that email already exists'})
     first_name = models.CharField(max_length=50, blank=False, null=False)
     last_name = models.CharField(max_length=50, blank=False, null=False)
@@ -38,6 +39,12 @@ class Festival(models.Model):
     website = models.URLField(blank=True, default='No website provided')
     lat = models.FloatField(blank=True, null=True)
     lon = models.FloatField(blank=True, null=True)
+    
+    # null=True so we dont break model - only for testing!!!!!!!!!!
+    # TODO : delete those values when creating new db
+    date_start = models.DateField(null=True)
+    date_end = models.DateField(null=True)
+    img = models.CharField(null=True)
 
     class Meta:
         ordering = ['name']
@@ -60,11 +67,32 @@ class Post(models.Model):
     post_liked_by = models.ManyToManyField(CustomUser, related_name='liked_posts')
     post_disliked_by = models.ManyToManyField(CustomUser, related_name='disliked_posts')
 
-
     class Meta:
         ordering = ['-time']
 
+
 # also add comments
+#---------------------------------
+# COMMENTS
+class Comment(models.Model):
+    time = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()
+    edited = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
+
+    #one-to-many
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
+
+    #self reference
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='child_comments', on_delete=models.CASCADE)
+
+    #many-to-many
+    comment_liked_by = models.ManyToManyField(CustomUser, related_name='liked_comments')
+    comment_disliked_by = models.ManyToManyField(CustomUser, related_name='disliked_comments')
+
+    class Meta:
+        ordering = ['-time']
 
 #---------------------------------
 #  CHAT
@@ -86,5 +114,7 @@ class Message(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='chat_messages')
 
+    class Meta:
+        ordering = ['-time']
     
 

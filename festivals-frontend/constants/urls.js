@@ -28,5 +28,10 @@ export const POSTS = BASE_URL + `/posts/`
 export const POST_DETAIL = (postId) => BASE_URL + `/posts/${postId}`
 
 // CHATS
+export const CHAT_DETAIL = (chatId) => BASE_URL + `/chats/${chatId}`
 export const FESTIVAL_CHATS = (festivalId) => BASE_URL + `/festivals/${festivalId}/chats/`
 export const MESSAGES = (festivalId, chatId) => BASE_URL + `/festivals/${festivalId}/chats/${chatId}`
+
+// COMMENTS
+export const POST_COMMENTS = (postId) => BASE_URL + `/posts/${postId}/comments`
+export const DELETE_COMMENT = (commentId) => BASE_URL + `/comments/${commentId}`
