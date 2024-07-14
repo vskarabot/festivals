@@ -24,10 +24,11 @@
             </v-bottom-sheet>
             <template v-slot:append>
                 <v-icon v-if="!comment.deleted && comment.is_author || comment.can_delete" class="ml-2" icon="mdi-dots-horizontal" @click="showBottomSheet = true"></v-icon>
+                <v-icon v-else-if="comment.deleted" class="ml-2" icon="mdi-trash-can-outline" color="error"></v-icon>
             </template>
 
             <v-card-text v-if="!comment.deleted">{{ props.comment.text }}</v-card-text>
-            <v-card-text v-else>[The post was removed]</v-card-text>
+            <v-card-text v-else>[The comment was removed]</v-card-text>
             <v-card-actions v-if="!comment.deleted">
                 <v-btn v-if="props.comment.user_likes" color="primary" size="small" rounded variant="tonal" @click="action('like')"><v-icon icon="mdi-thumb-up" />{{ props.comment.number_of_likes }}</v-btn>
                 <v-btn v-else size="small" color="blue-grey-darken-1" rounded variant="tonal" @click="action('like')"><v-icon icon="mdi-thumb-up-outline" />{{ props.comment.number_of_likes }}</v-btn>

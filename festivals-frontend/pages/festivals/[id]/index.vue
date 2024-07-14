@@ -127,13 +127,33 @@
 
         const mbLoc = await $fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${festival.value.lon},${festival.value.lat}.json?access_token=${runtimeConfig.public.mapboxToken}`)
         locationName.value = mbLoc.features?.[0]?.place_name
-        console.log(locationName)
 
         // hotel options
+        const today = new Date()
+        let today3 = new Date()
+        today3.setDate(today.getDate() + 3)
+
+        hotelOptions.value.tookPlace = ''
+        if (new Date(festival.value.date_start) <= today && new Date(festival.value.date_end) >= today) {
+            hotelOptions.value.tookPlace = '* Festival is already ongoing!'
+            hotelOptions.value.checkin = today.toISOString().substring(0,10)
+            hotelOptions.value.checkout = festival.value.date_end
+        }
+        else if (today >= new Date(festival.value.date_start) && today >= new Date(festival.value.date_end)) {
+            if (!festival.value.date_start || !festival.value.date_end)
+                hotelOptions.value.tookPlace = '* No info about dates yet!'
+            else
+                hotelOptions.value.tookPlace = '* This festival already ended this years edition!'
+            hotelOptions.value.checkin = today.toISOString().substring(0,10)
+            hotelOptions.value.checkout = today3.toISOString().substring(0,10)
+        }
+        else {
+            hotelOptions.value.checkin = festival.value.date_start
+            hotelOptions.value.checkout = festival.value.date_end
+        }
+
         hotelOptions.value.lat = festival.value.lat.toFixed(6)
         hotelOptions.value.lon = festival.value.lon.toFixed(6)
-        hotelOptions.value.checkin = '2024-07-07'
-        hotelOptions.value.checkout = '2024-07-09'
         hotelOptions.value.adults = '2'
         hotelOptions.value.rooms = '1'
         hotelOptions.value.maxPricePerNight = '100'

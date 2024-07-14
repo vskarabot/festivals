@@ -25,8 +25,27 @@
                         <span class="mx-2">•</span>
                     </v-chip>
 
-                    <v-card-subtitle class="my-0 py-0">{{ post.festival_name }}, {{ post.time_string }}<span
-                            v-if="post.edited">&nbsp;(edited)</span></v-card-subtitle>
+                    <v-card-subtitle class="my-0 py-0">
+                        <NuxtLink :to="{ name: 'festivals-id', params: { id: `${post.festival}`} }">
+                            <v-chip
+                                :variant="hoverFestName ? 'elevated' : 'text'"
+                                :color="hoverFestName ? 'purple-darken-4' : 'default'"
+                                :class="hoverFestName ? 'px-2' : 'px-0'"
+                                rounded="sm"
+                                @mouseover="hoverFestName = true"
+                                @mouseleave="hoverFestName = false"
+                            >
+                                {{ post.festival_name }}
+                            </v-chip>
+                        </NuxtLink>
+                        <v-chip
+                            variant="text"
+                            class="px-0"
+                            rounded="sm"
+                        >
+                            &nbsp;•&nbsp;{{ post.time_string }}<span v-if="post.edited">&nbsp;(edited)</span>
+                        </v-chip>
+                    </v-card-subtitle>
                 </template>
                 <template v-slot:append>
                     <ChipLabel :label="post.label" />
@@ -95,6 +114,7 @@ const sort = ref('New')
 
 const showBottomSheet = ref(false)
 const textArea = ref(false)
+const hoverFestName = ref(false)
 
 const newComment = ref('')
 
@@ -110,6 +130,10 @@ onMounted(async () => {
     post.value = responseData
 
     await fetchComments()
+})
+
+onActivated(() => {
+    hoverFestName.value = false
 })
 
 const reaction = async (action) => {

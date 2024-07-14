@@ -110,7 +110,7 @@ export const login = async (data) => {
 
     const responseData = await response.json()
     if (responseData.detail) {
-        console.log(responseData.detail)
+        return responseData.detail
     }
     else {
         setTokens(responseData.access, responseData.refresh)

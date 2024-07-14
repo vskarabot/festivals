@@ -17,6 +17,7 @@
         prepend-icon="mdi-bed"
         title="Accomodations"
       >
+        <v-card-text v-if="props.options.tookPlace" class="text-error">{{ props.options.tookPlace }}</v-card-text>
         <v-card-text>
           <v-row dense>
             <v-col
@@ -189,7 +190,8 @@
             rooms: String,
             checkin: String,
             checkout: String,
-            maxPricePerNight: String
+            maxPricePerNight: String,
+            tookPlace: String
         }
     })
 

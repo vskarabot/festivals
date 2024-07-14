@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.http import Http404
 from .choices import COUNTRIES
 
-from django.db.models import Count, Case, When, FloatField, Value, F
+from django.db.models import Count, Case, When, FloatField, Value, F, Q
 
 from api.models import Festival, Post, Chat, Message, Comment
 from api.serializers import FestivalSerializer, PostSerializer, ChatSerializer, MessageSerializer, CommentSerializer
@@ -48,7 +48,8 @@ class FestivalList(generics.ListCreateAPIView):
         if favourites:
             queryset = queryset.filter(favourite_by=user)
         if upcoming:
-            queryset = queryset.filter(date_start__gte=date.today())
+            queryset = queryset.exclude(date_start__isnull=True)
+            queryset = queryset.filter(Q(date_start__gte=date.today()) | Q(date_end__gte=date.today()))
         return queryset
     
 

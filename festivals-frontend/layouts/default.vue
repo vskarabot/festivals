@@ -8,8 +8,6 @@
 
                 <v-btn icon="mdi-forum" variant="plain" @click="forum"></v-btn>
 
-                <v-btn icon="mdi-bell" variant="plain"></v-btn>
-
                 <!-- TODO : add some kind of menu to display also username and put next 2 v-btn into one -->
                 <v-btn icon="mdi-account" variant="plain" @click="profile"></v-btn>
 

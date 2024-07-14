@@ -30,8 +30,9 @@
                         <v-btn 
                             @click="openChat(chat)" 
                             class="w-100 h-100"
-                            variant="tonal"
-                            color="primary"
+                            variant="flat"
+                            rounded="xl"
+                            color="purple-darken-4"
                         >
                             <span class="text-wrap">{{ chat.name }}</span>
                         </v-btn>

@@ -46,15 +46,16 @@
                 <v-divider></v-divider>
 
                 <!-- show results if found -->
+                <v-progress-circular v-if="loading" indeterminate class="my-2"></v-progress-circular>  
                 <HomeHPFestivalCard
-                    v-if="results.length"
-                    :festivals="results" 
+                    v-if="initialLoad"
+                    :festivals="festivals" 
                 />
                 <HomeHPFestivalCard
-                    v-else-if="query.length < 3"
-                    :festivals="festivals"
+                    v-else-if="results && results.length"
+                    :festivals="results"
                 />
-                <v-sheet v-else>No results found</v-sheet>
+                <v-sheet v-else>No results found</v-sheet>           
                             
             </v-card>
         </v-sheet>
@@ -72,29 +73,38 @@
     const upcoming = ref(false)
     const favourites = ref(false)
 
+    const initialLoad = ref(true)
+    const loading = ref(false)
+
     onMounted(async () => {
+        loading.value = true
         const response = await requests.getFestivals()
 
         if (response.status === 200) {
             festivals.value = await response.json()
+            loading.value = false
         }
     })
 
     const search = async () => {
+        loading.value = true
         const params = makeParams()
         try {
             const response = await requests.getFestivals(params)
             results.value = await response.json()
-
+            loading.value = false
         } catch (error) {
             console.error(error)
         }
     }
 
     const getOnlySelectedData = async() => {
+        loading.value = true
         const params = makeParams()
         const response = await requests.getFestivals(params)
         results.value = await response.json()
+        initialLoad.value = false
+        loading.value = false
     }
 
     const makeParams = () => {

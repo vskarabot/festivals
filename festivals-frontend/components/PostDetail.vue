@@ -38,11 +38,14 @@
                 <v-card-subtitle class="my-0 py-0">
                     <NuxtLink :to="{ name: 'festivals-id', params: { id: `${post.festival}`} }">
                         <v-chip
-                            variant="outlined"
-                            class="px-0"
+                            :variant="hoverFestName ? 'elevated' : 'text'"
+                            :color="hoverFestName ? 'purple-darken-4' : 'default'"
+                            :class="hoverFestName ? 'px-2' : 'px-0'"
                             rounded="sm"
+                            @mouseover="hoverFestName = true"
+                            @mouseleave="hoverFestName = false"
                         >
-                            {{ post.festival_name }},
+                            {{ post.festival_name }}
                         </v-chip>
                     </NuxtLink>
                     <v-chip
@@ -50,9 +53,8 @@
                         class="px-0"
                         rounded="sm"
                     >
-                        &nbsp;{{ post.time_string }}
+                        &nbsp;•&nbsp;{{ post.time_string }}<span v-if="post.edited">&nbsp;(edited)</span>
                     </v-chip>
-                    <span v-if="post.edited">&nbsp;(edited)</span>
                 </v-card-subtitle>
             
             </template>
@@ -113,7 +115,7 @@
                 {{ post.number_of_dislikes }}
                 </v-btn>
                 
-                <v-btn width="100" size="small" color="blue-grey-darken-1" @click.prevent="openPost" variant="tonal" rounded prepend-icon="mdi-comment">{{ post.number_of_comments }}</v-btn>
+                <v-btn width="100" size="small" color="blue-grey-darken-1" @click.prevent="openPost" variant="tonal" rounded prepend-icon="mdi-comment-outline">{{ post.number_of_comments }}</v-btn>
             </v-card-actions>
         </v-card>
     </v-sheet>
@@ -129,6 +131,7 @@
     const showBottomSheet = ref(false)
     const hoverLike = ref(false)
     const hoverDislike = ref(false)
+    const hoverFestName = ref(false)
 
     const emit = defineEmits(['like', 'dislike', 'delete'])
 
@@ -156,10 +159,3 @@
         })
     }
 </script>
-
-<style>
-    a {
-        text-decoration: none;
-        color: inherit;
-    }
-</style>
