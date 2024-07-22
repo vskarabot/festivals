@@ -5,7 +5,7 @@
                 <v-card-subtitle>{{ props.message.time_string }}</v-card-subtitle>
             </v-col>
             
-            <v-col v-if="props.message.is_author" cols="12" class="d-flex justify-end">
+            <v-col v-if="props.message.author == userId" cols="12" class="d-flex justify-end">
                 <v-card @click="toggleTime" flat color="primary" class="rounded-xl" max-width="300">
                     <v-card-text class="py-2">{{ props.message.text }}</v-card-text>
                 </v-card>
@@ -21,9 +21,13 @@
 </template>
 
 <script setup>
+    import authentication from '~/composables/auth'
+
     const props = defineProps({
         message: Object
     })
+
+    const { userId } = authentication()
 
     const time = ref(false)
 

@@ -5,6 +5,47 @@
                 <v-toolbar-title><v-btn @click="home" variant="plain"><b>Fest</b></v-btn></v-toolbar-title>
 
                 <v-spacer></v-spacer>
+                
+                <v-btn variant="plain" stacked @click="notifications">
+                    <v-badge v-if="unreadNotifications" color="error" :content="unreadNotifications">
+                        <v-icon icon="mdi-bell"></v-icon>
+                    </v-badge>
+                    <v-badge v-else color="primary" :content="0">
+                        <v-icon icon="mdi-bell"></v-icon>
+                    </v-badge>
+                    <v-menu v-model="menu" width="300" activator="parent" transition="scale-transition">
+                        <v-list class="py-0 my-0 text-right">
+                            <v-card>
+                                <v-row class="d-flex justify-space-between">
+                                    <v-col class="text-left">
+                                        <v-card-text><b>Notifications</b></v-card-text>
+                                    </v-col>
+                                    <v-col>
+                                        <v-card-text><v-icon icon="mdi-close" @click="menu = false"></v-icon></v-card-text>
+                                    </v-col>
+                                </v-row>
+                            </v-card>
+                            <v-list-item
+                                v-for="(notification, index) in notificationsList"
+                                :key="index"
+                                :value="notification"
+                                class="px-0 py-0 text-left"
+                            >
+                                <v-card 
+                                    :variant="notification.read ? 'text' : 'tonal'" 
+                                    color="primary" 
+                                    class="no-radius" 
+                                    :to="`/festivals/${notification.festival}/chats/${notification.chat}?message=${notification.message}`"
+                                >
+                                    <v-card-text class="pb-0 mb-0"><b>{{ notification.chat_name }}</b> • {{ notification.time_string }}</v-card-text>
+                                    <v-card-subtitle class="mb-4" :opacity="10">User <b>{{ notification.message_username }}</b> wrote: "{{ notification.message_text}}"</v-card-subtitle>
+                                </v-card>
+                                <v-divider></v-divider>
+                            </v-list-item>
+                            <v-card class="py-2 text-center"><v-btn width="90%"color="primary" rounded="xl">See all</v-btn></v-card>  
+                        </v-list>
+                    </v-menu>
+                </v-btn>
 
                 <v-btn icon="mdi-forum" variant="plain" @click="forum"></v-btn>
 
@@ -23,8 +64,18 @@
 
 <script setup>
     import authentication from '~/composables/auth'
+    import * as requests from '../services/requests'
 
     const { logout, logedUser } = authentication()
+
+    const menu = ref(false)
+
+    const notificationsList = ref('')
+
+    onMounted(async() => {
+        notificationsList.value = await requests.getNotifications()
+        console.log(notificationsList.value)
+    })
 
     const handleLogout = () => {
         logout()
@@ -42,4 +93,20 @@
     const profile = () => {
         useRouter().push('/me/profile/')
     }
+
+    const unreadNotifications = computed(() => {
+        if (notificationsList && notificationsList.value.length) {
+            return notificationsList.value.filter(notification => !notification.read).length
+        }
+    })
+
+    const notifications = () => {
+        
+    }
 </script>
+
+<style scoped>
+    .no-radius {
+        border-radius: 0;
+    }
+</style>

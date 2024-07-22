@@ -44,36 +44,55 @@
                 </v-sheet>
                 <v-divider></v-divider>
                 <v-row class="my-4" justify="center">
-                    <v-col cols="12" sm="4">
+                    <v-col cols="12" sm="3">
+                        <v-card variant="text" class="text-center">
+                            <v-icon icon="mdi-music" />
+                            <v-card-text>House</v-card-text> 
+                        </v-card>
+                    </v-col>
+
+                    <v-col cols="12" sm="3">
                         <v-card variant="text" class="text-center">
                             <v-icon icon="mdi-map-marker" />
                             <v-card-text v-if="locationName">{{ locationName }}</v-card-text> 
                         </v-card>
                     </v-col>
                     
-                    <v-col cols="12" sm="4">
+                    <v-col cols="12" sm="3">
                         <v-card variant="text" class="text-center ">
                             <v-icon icon="mdi-calendar" />
-                            <v-card-text v-if="festival.date_start">{{ festival.date_start }} - {{ festival.date_end }}</v-card-text>
+                            <v-card-text v-if="festival.date_start">
+                                {{ dateFormat(festival.date_start) }}<br>
+                                - <br>
+                                {{ dateFormat(festival.date_end) }}
+                            </v-card-text>
                             <v-card-text v-else>No dates yet</v-card-text>
                         </v-card>
                     </v-col>
                     
-                    <v-col cols="12" sm="4">
+                    <v-col cols="12" sm="3">
                         <v-card variant="text" class="text-center" color="primary" :href="festival.website" target="_blank">
                             <v-icon icon="mdi-web" />
                             <v-card-text v-if="festival.website">{{ festival.website }}</v-card-text>
-                            <v-card-text v-else>No website</v-card-text>
+                            <v-card-text v-else>No website data</v-card-text>
                         </v-card>
                     </v-col>
                 </v-row>
-                <v-expansion-panels>
+                <v-expansion-panels v-model="defaultPanel">
                     <v-expansion-panel>
                         <v-expansion-panel-title class="font-weight-bold">
-                            About festival
+                            Basic info
                         </v-expansion-panel-title>
                         <v-expansion-panel-text>
                             {{ festival.info }}
+                        </v-expansion-panel-text>
+                    </v-expansion-panel>
+                    <v-expansion-panel>
+                        <v-expansion-panel-title class="font-weight-bold">
+                            Lineup
+                        </v-expansion-panel-title>
+                        <v-expansion-panel-text>
+                            Upload image
                         </v-expansion-panel-text>
                     </v-expansion-panel>
                     <v-expansion-panel>
@@ -117,6 +136,7 @@
     const directions = ref([])
 
     const toggle = ref(null)
+    const defaultPanel = ref([0])
 
     // check if exists with USEFETCH (we need credentials)
 
@@ -193,5 +213,12 @@
 
     const showOrHideDirections = (show) => {
         showPath.value = show
+    }
+
+    const dateFormat = (dateString) => {
+        const date = new Date(dateString)
+        const locale = navigator.language || 'en-US'
+
+        return new Intl.DateTimeFormat(locale).format(date)
     }
 </script>

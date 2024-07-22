@@ -9,7 +9,10 @@ urlpatterns = [
     path('hotels/', views.Hotels.as_view()),
 
     path('festivals/<int:pk>/chats/', views.ChatList.as_view()),
+    path('festivals/<int:pk>/chats/<int:cpk>/detail', views.ChatDetail.as_view()),
     path('festivals/<int:pk>/chats/<int:cpk>', views.MessageList.as_view()),
+
+    path('notifications/', views.NotificationList.as_view()),
 
     path('posts/', views.PostList.as_view()),
     path('posts/<int:pk>', views.PostDetail.as_view()),

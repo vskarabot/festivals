@@ -93,6 +93,7 @@
             const response = await requests.getFestivals(params)
             results.value = await response.json()
             loading.value = false
+            initialLoad.value = false
         } catch (error) {
             console.error(error)
         }
@@ -103,7 +104,6 @@
         const params = makeParams()
         const response = await requests.getFestivals(params)
         results.value = await response.json()
-        initialLoad.value = false
         loading.value = false
     }
 

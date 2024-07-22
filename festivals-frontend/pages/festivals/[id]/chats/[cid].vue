@@ -2,19 +2,32 @@
     <v-sheet class="pa-4 mx-auto" max-width="500" width="100%">
         <v-card class="mx-auto">
             <v-sheet class="d-flex justify-space-between align-center" height="70" color="indigo-darken-4">
-                <v-card-title>Chat</v-card-title>
-                <v-icon v-if="notifications" class="pr-8" icon="mdi-bell" @click="notifications = false"></v-icon>
-                <v-icon v-else class="pr-8" icon="mdi-bell-off" @click="notifications = true"></v-icon>
+                <v-card-title v-if="chatDetails && chatDetails.name">{{ chatDetails.name }}</v-card-title>
+                <v-progress-circular v-else></v-progress-circular>
+                <v-icon v-if="chatDetails.notify_user" class="pr-8" icon="mdi-bell" @click="manageNotifications"></v-icon>
+                <v-icon v-else class="pr-8" icon="mdi-bell-off" @click="manageNotifications"></v-icon>
             </v-sheet>
             <v-divider></v-divider>
-            <v-infinite-scroll ref="infiniteScroll" :items="apiMessages" :onLoad="load" side="start" height="500">
-                <div v-for="message in apiMessages" :key="message">
+            <v-infinite-scroll ref="infiniteScroll" :items="apiMessages" :onLoad="load" side="start" height="500" @scroll.native="scrolling">
+                <div v-for="(message, index) in apiMessages" :key="message.id" :id="'message-' + message.id">
+
+                    <v-divider v-if="showDivider(index)" class="mx-8" inset :thickness="2">New messages</v-divider>
+
                     <Message :message="message" />
                 </div>
                 <template v-slot:empty>
-                    <!-- to not show message if no messages left -->
+                    <v-card-text>No more messages...</v-card-text>
                 </template>
-            </v-infinite-scroll>
+                <v-btn
+                    v-if="showDownButton"
+                    @click="scrollToBottom"
+                    icon="mdi-chevron-down"
+                    size="small"
+                    color="secondary"
+                    class="position-absolute mb-4 scroll-down-style"
+                >
+                </v-btn> 
+            </v-infinite-scroll>  
         </v-card>
         <v-textarea
             class="my-4"
@@ -29,7 +42,7 @@
             <template v-slot:prepend-inner>
                 <v-btn
                     icon="mdi-emoticon"
-                    :variant="emojiHover ? 'flat' : 'text'"
+                    :variant="emojiHover ? 'text' : 'elevated'"
                     color="indigo-darken-4"
                     @mouseleave="emojiHover = false"
                     @mouseover="emojiHover = true"
@@ -61,16 +74,25 @@
     const emojiHover = ref(false)
     const sendHover = ref(false)
 
-    const infiniteScroll = ref(null)    
+    // ref for infinite scroll
+    const infiniteScroll = ref(null)
+    const heightValues = ref(
+        { scrollHeight: 0 },
+        { scrollTop: 0 },
+        { clientHeight: 0 }
+    )
+
     const apiMessages = ref([])
     const nextPage = ref('Initial')
     const newMessage = ref('')
 
-    const notifications = ref(false)
-    
     // Get chat ID and author ID from props
     const festivalId = useRoute().params.id
     const chatId = useRoute().params.cid
+    const chatDetails = ref('')
+
+    // access from notifications
+    const newMessageId = ref(parseInt(useRoute().query.message))
 
     // check if exists
     const { error } = await useFetch(`http://localhost:8000/festivals/${festivalId}/chats/${chatId}`)
@@ -80,6 +102,9 @@
     }
     
     onMounted(async() => {
+        // fetch chat details (will also return if user should get notification as notify_user)
+        chatDetails.value = await requests.chatDetails1(festivalId, chatId)
+        
         // Pusher for new messages          
         const pusher = new Pusher('e08dbedd3b10916330c8', {
             cluster: 'eu',
@@ -88,29 +113,25 @@
         // Subscribe to the channel and bind to events -> channel chat-{chatId} and event new-message
         channel.bind('new-message', (data) => {
             // push live messages to the messages array
-            const container = infiniteScroll.value.$el
-            let scroll = false
-            // only scroll to bottom if we are at the bottom
-            // scrollHeight -> height of whole infinite scroll; scrollTop -> from visible top to top of infinite scroll; clientHeight -> visible height
-            if (container.scrollHeight - container.scrollTop === container.clientHeight)
-                scroll = true
             apiMessages.value.push(data)
-
-            if (scroll) {
-                nextTick(() => {
-                    container.scrollTop = container.scrollHeight
-                })
-            }
+            
+            nextTick (() => {
+                const element = infiniteScroll?.value.$el
+                heightValues.value.scrollHeight = element.scrollHeight
+                heightValues.value.scrollTop = element.scrollTop
+                heightValues.value.clientHeight= element.clientHeight
+            })
         })
+
+        jumpToMessage()
 
         onBeforeRouteLeave(() => {
             pusher.disconnect()
         })
     })
 
-    onActivated(async () => {
-        const container = infiniteScroll.value.$el
-        container.scrollTop = container.scrollHeight       
+    onActivated(async () => {        
+        jumpToMessage()
     })
 
     const sendMessage = () => {
@@ -139,5 +160,52 @@
         }
     }
 
+    const manageNotifications = async() => {
+        const response = await requests.manageNotifications(festivalId, chatDetails.value.id, !chatDetails.value.notify_user)
+        console.log(response)
+        chatDetails.value = response
+    }
+
+    const jumpToMessage = () => {
+        nextTick (() => {
+            if (newMessageId.value) {
+                const messageElement = document.getElementById('message-'+ newMessageId.value)
+                if (messageElement) {
+                    messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }
+            }
+        })
+    }
+
+    const showDivider = (index) => {
+        return apiMessages.value[index].id === newMessageId.value
+    }
+
+    const scrolling = (event) => {
+        const element = event.target
+        heightValues.value.scrollHeight = element.scrollHeight
+        heightValues.value.scrollTop = element.scrollTop
+        heightValues.value.clientHeight= element.clientHeight
+    }
+
+    const showDownButton = computed(() => {
+        return heightValues.value.scrollHeight - heightValues.value.scrollTop !== heightValues.value.clientHeight
+    })
+
+    const scrollToBottom = () => {
+        const container = infiniteScroll.value.$el
+        container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+        })  
+    }
 </script>
+
+<style>
+    .scroll-down-style {
+        left: 50%;
+        bottom: 0;
+        transform: translate(-50%);
+    }
+</style>
   
