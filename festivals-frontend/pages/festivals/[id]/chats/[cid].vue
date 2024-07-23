@@ -42,7 +42,7 @@
             <template v-slot:prepend-inner>
                 <v-btn
                     icon="mdi-emoticon"
-                    :variant="emojiHover ? 'text' : 'elevated'"
+                    :variant="emojiHover ? 'flat' : 'text'"
                     color="indigo-darken-4"
                     @mouseleave="emojiHover = false"
                     @mouseover="emojiHover = true"

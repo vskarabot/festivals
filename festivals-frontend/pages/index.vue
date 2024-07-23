@@ -1,65 +1,75 @@
 <template>
     <!-- sloted menu -->
-    <v-container fluid class="px-0 py-0">
-        <v-sheet class="px-4 mx-auto" max-width="800" rounded="lg" width="100%">
-            <v-card class="mx-auto px-8 py-8 text-center">
-                <v-card-title class="text-left text-h4">Festivals</v-card-title>
-                <v-sheet max-width="500" class="mx-auto mx-8 my-4">
-                    Didn't find your festival? Create new community for the festival!
-                    <NuxtLink to="/festivals/add-edit-festival">Add a festival</NuxtLink>
+     <v-sheet color="primary">
+        <!--<v-container fluid class="px-0 py-0">-->
+            <v-sheet class="mx-auto" max-width="700" style="border-radius: 0;" width="100%">
+                <v-card class="mx-auto text-center" style="border-radius: 0;" color="primary">
+                    <v-card max-width="600" class="mx-auto ma-4 pa-4" color="primary" variant="flat">
+                        <v-row class="d-flex align-center">
+                            <v-col cols="10" class="text-left px-0">
+                                <v-card-text>Want to join us? Create new festival and help others!</v-card-text>
+                            </v-col>
+                            <v-col cols="2">
+                                <v-btn color="teal-lighten-1" icon="mdi-plus" to="/festivals/add-edit-festival"></v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-divider thickness="2"></v-divider>
+                        <v-card-title class="text-h4 text-left px-0">Festivals </v-card-title>
+                        <v-text-field
+                            class="mt-4"    
+                            v-model="query" 
+                            @input="search" 
+                            label="Search festivals" 
+                            variant="outlined" 
+                            append-inner-icon="mdi-magnify"
+                            density="compact"
+                            hide-details
+                            single-line
+                            rounded
+                            color="teal-lighten-1"
+                        >
+                        </v-text-field>
+                        <v-select
+                            v-model="selectedSort"
+                            class="mt-4"
+                            label="Sort by"
+                            :items="['Date', 'Popularity']"
+                            variant="outlined"
+                            density="compact"
+                            rounded
+                            max-width="150"
+                            color="teal-lighten-1"
+                            @update:modelValue="getOnlySelectedData"
+                        ></v-select>
 
-                    <v-text-field
-                        class="mt-4"    
-                        v-model="query" 
-                        @input="search" 
-                        label="Search festivals" 
-                        variant="outlined" 
-                        append-inner-icon="mdi-magnify"
-                        density="compact"
-                        hide-details
-                        single-line
-                        rounded
-                    >
-                    </v-text-field>
-                    <v-select
-                        v-model="selectedSort"
-                        class="mt-4"
-                        label="Sort by"
-                        :items="['Date', 'Popularity']"
-                        variant="outlined"
-                        density="compact"
-                        rounded
-                        max-width="150"
-                        @update:modelValue="getOnlySelectedData"
-                    ></v-select>
+                        <v-row>
+                            <v-col>
+                                <v-switch v-model="upcoming" color="teal-lighten-1" label="Show only upcoming" @change="getOnlySelectedData"></v-switch>
+                            </v-col>
+                            <v-col>
+                                <v-switch v-model="favourites" color="teal-lighten-1" label="Show my favorites only" @change="getOnlySelectedData"></v-switch>
+                            </v-col>
+                        </v-row>
 
-                    <v-row>
-                        <v-col>
-                            <v-switch v-model="upcoming" color="indigo" label="Show only upcoming" @change="getOnlySelectedData"></v-switch>
-                        </v-col>
-                        <v-col>
-                            <v-switch v-model="favourites" color="indigo" label="Show my favorites only" @change="getOnlySelectedData"></v-switch>
-                        </v-col>
-                    </v-row>
-                </v-sheet>
+                        <v-divider thickness="2"></v-divider>
+                    </v-card>
 
-                <v-divider></v-divider>
-
-                <!-- show results if found -->
-                <v-progress-circular v-if="loading" indeterminate class="my-2"></v-progress-circular>  
-                <HomeHPFestivalCard
-                    v-if="initialLoad"
-                    :festivals="festivals" 
-                />
-                <HomeHPFestivalCard
-                    v-else-if="results && results.length"
-                    :festivals="results"
-                />
-                <v-sheet v-else>No results found</v-sheet>           
-                            
-            </v-card>
-        </v-sheet>
-    </v-container>
+                    <!-- show results if found -->
+                    <v-progress-circular v-if="loading" indeterminate class="my-2"></v-progress-circular>  
+                    <HomeHPFestivalCard
+                        v-if="initialLoad"
+                        :festivals="festivals" 
+                    />
+                    <HomeHPFestivalCard
+                        v-else-if="results && results.length"
+                        :festivals="results"
+                    />
+                    <v-sheet v-else>No results found</v-sheet>           
+                                
+                </v-card>
+            </v-sheet>
+        <!--</v-container>-->
+    </v-sheet>
 </template>
 
 <script setup>

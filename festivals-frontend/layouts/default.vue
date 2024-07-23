@@ -1,7 +1,7 @@
 <template>
     <v-card>
         <v-layout>
-            <v-app-bar elevation="1" prominent>
+            <v-app-bar elevation="5" prominent color="primary">
                 <v-toolbar-title><v-btn @click="home" variant="plain"><b>Fest</b></v-btn></v-toolbar-title>
 
                 <v-spacer></v-spacer>
@@ -15,7 +15,7 @@
                     </v-badge>
                     <v-menu v-model="menu" width="300" activator="parent" transition="scale-transition">
                         <v-list class="py-0 my-0 text-right">
-                            <v-card>
+                            <v-card color="secondary" rounded="0">
                                 <v-row class="d-flex justify-space-between">
                                     <v-col class="text-left">
                                         <v-card-text><b>Notifications</b></v-card-text>
@@ -31,18 +31,25 @@
                                 :value="notification"
                                 class="px-0 py-0 text-left"
                             >
-                                <v-card 
-                                    :variant="notification.read ? 'text' : 'tonal'" 
-                                    color="primary" 
-                                    class="no-radius" 
-                                    :to="`/festivals/${notification.festival}/chats/${notification.chat}?message=${notification.message}`"
-                                >
-                                    <v-card-text class="pb-0 mb-0"><b>{{ notification.chat_name }}</b> • {{ notification.time_string }}</v-card-text>
-                                    <v-card-subtitle class="mb-4" :opacity="10">User <b>{{ notification.message_username }}</b> wrote: "{{ notification.message_text}}"</v-card-subtitle>
-                                </v-card>
-                                <v-divider></v-divider>
+                                <v-row class="d-flex align-center" style="background-color: #4B5476;"><!-- same color as card -->
+                                    <v-col cols="10">
+                                        <v-card
+                                            color="card"
+                                            variant="flat"
+                                            class="no-radius" 
+                                            :to="`/festivals/${notification.festival}/chats/${notification.chat}?message=${notification.message}`"
+                                        >
+                                            <v-card-text class="pb-0 mb-0"><b>{{ notification.chat_name }}</b> • {{ notification.time_string }}</v-card-text>
+                                            <v-card-subtitle class="mb-4" :opacity="10">User <b>{{ notification.message_username }}</b> wrote: "{{ notification.message_text}}"</v-card-subtitle>
+                                        </v-card>
+                                    </v-col>
+                                    <v-col cols="2">
+                                        <v-icon icon="mdi-circle-medium" color="teal-lighten-1"></v-icon>
+                                    </v-col>
+                                </v-row>
+                                <v-divider thickness="2"></v-divider>
                             </v-list-item>
-                            <v-card class="py-2 text-center"><v-btn width="90%"color="primary" rounded="xl">See all</v-btn></v-card>  
+                            <v-card class="py-2 text-center" rounded="0" color="secondary"><v-btn width="90%"color="teal-lighten-1" rounded="xl">See all</v-btn></v-card>  
                         </v-list>
                     </v-menu>
                 </v-btn>
@@ -56,6 +63,7 @@
             </v-app-bar>
 
             <v-main>
+                <v-divider></v-divider>
                 <slot></slot>
             </v-main>
         </v-layout>

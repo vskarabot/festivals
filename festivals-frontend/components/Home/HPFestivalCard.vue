@@ -2,9 +2,11 @@
     <v-card
         v-for="(festival, index) in festivals" 
         :key="festival.id"
-        class="mx-auto my-4"
-        max-width="600"
+        class="mx-auto my-2"
+        max-width="570"
         elevation="2"
+        color="secondary"
+        variant="flat"
         @click=""
     >
         <v-img
@@ -18,6 +20,7 @@
         </v-img>
         <v-sheet
             v-else
+            color="secondary"
             class="text-left"
             variant="text"
         >
