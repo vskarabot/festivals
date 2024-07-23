@@ -57,12 +57,8 @@
                     <!-- show results if found -->
                     <v-progress-circular v-if="loading" indeterminate class="my-2"></v-progress-circular>  
                     <HomeHPFestivalCard
-                        v-if="initialLoad"
+                        v-if="festivals.length"
                         :festivals="festivals" 
-                    />
-                    <HomeHPFestivalCard
-                        v-else-if="results && results.length"
-                        :festivals="results"
                     />
                     <v-sheet v-else>No results found</v-sheet>           
                                 
@@ -75,15 +71,13 @@
 <script setup>
     import * as requests from '../services/requests'
 
-    const festivals = ref(null)
-    const results = ref([])
+    const festivals = ref([])
 
     const query = ref('')
     const selectedSort = ref('Date')
     const upcoming = ref(false)
     const favourites = ref(false)
 
-    const initialLoad = ref(true)
     const loading = ref(false)
 
     onMounted(async () => {
@@ -101,9 +95,8 @@
         const params = makeParams()
         try {
             const response = await requests.getFestivals(params)
-            results.value = await response.json()
+            festivals.value = await response.json()
             loading.value = false
-            initialLoad.value = false
         } catch (error) {
             console.error(error)
         }
@@ -113,7 +106,7 @@
         loading.value = true
         const params = makeParams()
         const response = await requests.getFestivals(params)
-        results.value = await response.json()
+        festivals.value = await response.json()
         loading.value = false
     }
 
