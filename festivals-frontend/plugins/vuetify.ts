@@ -15,7 +15,8 @@ export default defineNuxtPlugin((nuxtApp) => {
                     colors: {
                         primary: '#0a0f21',
                         secondary: '#232C4C',
-                        card: '#4B5476'
+                        card: '#4B5476',
+                        teall1: '#26A69A'
                     }
                 }
             }

@@ -9,12 +9,27 @@
         variant="flat"
         @click=""
     >
+        <v-sheet
+            v-if="festival.img === 'error'"
+            color="secondary"
+            class="text-left"
+            variant="text"
+        >
+            <HomeFavouriteBy :festival="festival" />
+            
+            <v-tooltip text="Image not found">
+                <template v-slot:activator="{ props }">
+                    <v-icon v-bind="props" icon="mdi-image-broken"></v-icon>
+                </template>
+            </v-tooltip>
+        </v-sheet>
         <v-img
-            v-if="festival.img"
+            v-else-if="festival.img"
             class="text-left"
             height="250px"
             :src="festival.img"
             cover
+            @error="handleImageError(festival.id)"
         >
             <HomeFavouriteBy :festival="festival" />
         </v-img>
@@ -49,5 +64,10 @@
     const props = defineProps({
         festivals: Object
     })
+
+    const handleImageError = (id) => {
+        props.festivals.filter(festival => festival.id === id)[0].img = 'error'
+        console.log(props.festivals)
+    }
 
 </script>

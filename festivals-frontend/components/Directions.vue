@@ -1,13 +1,13 @@
 <template>
-  <v-sheet prepend-icon="mdi-directions">
+  <v-sheet prepend-icon="mdi-directions" color="secondary">
     <!-- class is for removing padding and margin because it is wraped and has double values -->
     <v-card-text class="px-0 py-0">
       <v-row dense>
         <v-col cols="1" class="px-0 py-0 d-flex align-center justify-center">
-          <v-icon icon="mdi-car" />
+          <v-icon icon="mdi-car" color="teal-lighten-1"/>
         </v-col>
         <v-col cols="11">
-          <mapbox-search-box :access-token="runtimeConfig.public.mapboxToken" proximity="0,0" />
+          <mapbox-search-box :access-token="runtimeConfig.public.mapboxToken" proximity="0,0" class="mapbox-search" />
         </v-col>
       </v-row>
     </v-card-text>
@@ -102,3 +102,9 @@
 
     // TODO -> endLocation is wrong now (i set starting location to the festival)
 </script>
+
+<style scoped>
+  .custom-mapbox-search-box .mapboxgl-ctrl-geocoder--input {
+    border-color: red; /* Change the border color */
+  }
+</style>

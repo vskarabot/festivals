@@ -1,17 +1,19 @@
 <template>
-    <v-sheet class="pa-4 mx-auto" max-width="500" width="100%">
-        <v-card class="mx-auto">
-            <v-sheet class="d-flex justify-space-between align-center" height="70" color="indigo-darken-4">
+    <v-sheet color="primary" class="py-8">
+        <v-card class="mx-auto" max-width="500" rounded="xl" color="card">
+            <v-sheet class="d-flex justify-space-between align-center" height="70" color="secondary">
                 <v-card-title v-if="chatDetails && chatDetails.name">{{ chatDetails.name }}</v-card-title>
                 <v-progress-circular v-else></v-progress-circular>
-                <v-icon v-if="chatDetails.notify_user" class="pr-8" icon="mdi-bell" @click="manageNotifications"></v-icon>
-                <v-icon v-else class="pr-8" icon="mdi-bell-off" @click="manageNotifications"></v-icon>
+                <v-icon v-if="chatDetails.notify_user" color="teall1" class="pr-8" icon="mdi-bell" @click="manageNotifications"></v-icon>
+                <v-icon v-else class="pr-8" color="teall1" icon="mdi-bell-off" @click="manageNotifications"></v-icon>
             </v-sheet>
-            <v-divider></v-divider>
+            
+            <v-divider thickness="3" color="primary" opacity="10"></v-divider>
+            
             <v-infinite-scroll ref="infiniteScroll" :items="apiMessages" :onLoad="load" side="start" height="500" @scroll.native="scrolling">
                 <div v-for="(message, index) in apiMessages" :key="message.id" :id="'message-' + message.id">
 
-                    <v-divider v-if="showDivider(index)" class="mx-8" inset :thickness="2">New messages</v-divider>
+                    <v-divider v-if="showDivider(index)" class="mx-4" color="teall1" opacity="10" inset :thickness="1">New messages</v-divider>
 
                     <Message :message="message" />
                 </div>
@@ -23,14 +25,17 @@
                     @click="scrollToBottom"
                     icon="mdi-chevron-down"
                     size="small"
-                    color="secondary"
+                    color="teall1"
                     class="position-absolute mb-4 scroll-down-style"
                 >
                 </v-btn> 
-            </v-infinite-scroll>  
+            </v-infinite-scroll>
         </v-card>
+        <!-- text input -->
         <v-textarea
-            class="my-4"
+            max-width="500"
+            class="mx-auto my-4"
+            color="teall1"
             variant="outlined" 
             v-model="newMessage" 
             label="New message..."
@@ -38,12 +43,13 @@
             rows="1"
             row-height="15"
             auto-grow
+            @keyup.enter="sendMessage"
         >
             <template v-slot:prepend-inner>
                 <v-btn
                     icon="mdi-emoticon"
-                    :variant="emojiHover ? 'flat' : 'text'"
-                    color="indigo-darken-4"
+                    variant="plain"
+                    :color="emojiHover ? 'yellow': 'teall1'"
                     @mouseleave="emojiHover = false"
                     @mouseover="emojiHover = true"
                     @click=""
@@ -53,6 +59,7 @@
                 <v-btn
                     icon="mdi-send"
                     variant="plain"
+                    color="teall1"
                     :color="sendHover ? 'primary' : ''"
                     @mouseleave="sendHover = false"
                     @mouseover="sendHover = true"
@@ -60,8 +67,8 @@
                 ></v-btn>
             </template>
         </v-textarea>
+        
     </v-sheet>
-
 </template>
   
 <script setup>
