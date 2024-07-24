@@ -1,49 +1,44 @@
 <template>
-    <v-sheet class="px-4 mx-auto" max-width="800" rounded="lg" width="100%">
-        <v-card class="mx-auto px-8 py-8 text-center">
-            <v-card-title class="text-h5 text-left">{{ buttonValue }}</v-card-title>
-            <v-sheet max-width="500" class="mx-auto mx-8 my-4 text-left">
-                <v-text-field v-model="festival.name" variant="outlined" label="Name" rounded density="compact"
-                    prepend-icon="mdi-music-box">
-                </v-text-field>
-                <v-textarea v-model="festival.info" variant="outlined" label="Information" rounded density="compact"
-                    prepend-icon="mdi-information">
-                </v-textarea>
-                <v-text-field v-model="festival.date_start" variant="outlined" type="date" label="Start date" rounded
-                    density="compact" prepend-icon="mdi-calendar-start">
-                </v-text-field>
-                <v-text-field v-model="festival.date_end" variant="outlined" type="date" label="End date" rounded
-                    density="compact" prepend-icon="mdi-calendar-end">
-                </v-text-field>
-                <v-text-field v-model="festival.website" variant="outlined" label="Website" rounded density="compact"
-                    prepend-icon="mdi-web">
-                </v-text-field>
-                <v-file-input v-model="festival.img" variant="outlined" label="Image" rounded density="compact"
-                    prepend-icon="mdi-image">
-                </v-file-input>
-                <v-text-field v-if="locationName" class="mt-4" variant="text" readonly rounded density="compact"
-                    prepend-icon="mdi-map-marker">
-                    {{ locationName }}
-                </v-text-field>
-                <v-text-field v-model="festival.lat" variant="outlined" label="Latitude" rounded density="compact"
-                    prepend-icon="mdi-latitude">
-                </v-text-field>
-                <v-text-field v-model="festival.lon" variant="outlined" label="Longitude" rounded density="compact"
-                    prepend-icon="mdi-longitude">
-                </v-text-field>
-                <v-btn class="mr-2" color="warning" @click="cancel">
-                    Cancel
-                </v-btn>
-                <v-btn color="primary" @click="addOrEdit">
-                    {{ buttonValue }}
-                </v-btn>
-            </v-sheet>
-            <v-row class="text-left">
-                <v-col>
-                    <Location :lat="festival.lat" :lon="festival.lon" :geolocationEnabled="true"
-                        @location-changed="handleLocationChanged" />
-                </v-col>
-            </v-row>
+    <v-sheet color="primary">
+        <v-card class="mx-auto px-8 pb-4 text-center" max-width="600" color="secondary" rounded="0" variant="flat">
+            <v-card-title class="text-h5 text-left my-4 px-0">{{ buttonValue }}</v-card-title>
+            <v-text-field v-model="festival.name" variant="outlined" label="Name" rounded density="compact" color="teal-lighten-1"
+                prepend-icon="mdi-music-box">
+            </v-text-field>
+            <v-textarea v-model="festival.info" variant="outlined" label="Information" rounded density="compact" color="teal-lighten-1"
+                prepend-icon="mdi-information">
+            </v-textarea>
+            <v-text-field v-model="festival.date_start" variant="outlined" type="date" label="Start date" rounded color="teal-lighten-1"
+                density="compact" prepend-icon="mdi-calendar-start">
+            </v-text-field>
+            <v-text-field v-model="festival.date_end" variant="outlined" type="date" label="End date" rounded color="teal-lighten-1"
+                density="compact" prepend-icon="mdi-calendar-end">
+            </v-text-field>
+            <v-text-field v-model="festival.website" variant="outlined" label="Website" rounded density="compact" color="teal-lighten-1"
+                prepend-icon="mdi-web">
+            </v-text-field>
+            <v-file-input v-model="festival.img" variant="outlined" label="Image" rounded density="compact" color="teal-lighten-1"
+                prepend-icon="mdi-image">
+            </v-file-input>
+            <v-text-field v-if="locationName" class="mt-4 text-left" variant="outlined" readonly rounded density="compact" 
+                prepend-icon="mdi-map-marker">
+                {{ locationName }}
+            </v-text-field> 
+            <v-text-field v-model="festival.lat" variant="outlined" label="Latitude" rounded density="compact" color="teal-lighten-1"
+                prepend-icon="mdi-latitude">
+            </v-text-field>
+            <v-text-field v-model="festival.lon" variant="outlined" label="Longitude" rounded density="compact" color="teal-lighten-1"
+                prepend-icon="mdi-longitude">
+            </v-text-field>
+            <v-btn class="mr-2" color="warning" @click="cancel">
+                Cancel
+            </v-btn>
+            <v-btn color="teal-lighten-1" @click="addOrEdit">
+                {{ buttonValue }}
+            </v-btn>
+        </v-card>
+        <v-card rounded="0">
+            <Location :lat="festival.lat" :lon="festival.lon" :geolocationEnabled="true" @location-changed="handleLocationChanged" />
         </v-card>
     </v-sheet>
 </template>
@@ -70,7 +65,7 @@
     })
 
     const buttonValue = computed(() => {
-        return useRoute().params.id ? 'Edit festival' : 'Add festival'
+        return useRoute().params.id ? 'Edit festival' : 'New festival'
     })
 
     onMounted(async () => {

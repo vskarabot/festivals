@@ -2,10 +2,10 @@ from django.http import JsonResponse
 from django.http import Http404
 from .choices import COUNTRIES
 
-from django.db.models import Count, Case, When, FloatField, Value, F
+from django.db.models import Count, Case, When, FloatField, Value, F, Q
 
-from api.models import Festival, Post, Chat, Message, Comment
-from api.serializers import FestivalSerializer, PostSerializer, ChatSerializer, MessageSerializer, CommentSerializer
+from api.models import Festival, Notification, Post, Chat, Message, Comment
+from api.serializers import FestivalSerializer, NotificationSerializer, PostSerializer, ChatSerializer, MessageSerializer, CommentSerializer
 
 from rest_framework import generics, status, serializers
 from rest_framework.response import Response
@@ -48,7 +48,8 @@ class FestivalList(generics.ListCreateAPIView):
         if favourites:
             queryset = queryset.filter(favourite_by=user)
         if upcoming:
-            queryset = queryset.filter(date_start__gte=date.today())
+            queryset = queryset.exclude(date_start__isnull=True)
+            queryset = queryset.filter(Q(date_start__gte=date.today()) | Q(date_end__gte=date.today()))
         return queryset
     
 
@@ -283,6 +284,25 @@ class ChatList(generics.ListCreateAPIView):
         festival = Festival.objects.get(id=festival_id)
         serializer.save(festival=festival)
 
+class ChatDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ChatSerializer
+    
+    def get_object(self):
+        try:
+            return Chat.objects.get(id=self.kwargs['cpk'])
+        except Chat.DoesNotExist:
+            raise Http404("Chat does not exist")
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        user = self.request.user
+        if user not in instance.notified_users.all():
+            instance.notified_users.add(user)
+        else:
+            instance.notified_users.remove(user)
+        instance.save()
+        serializer.save()
+
 
 class MessageListPagination(PageNumberPagination):
     page_size = 20
@@ -314,6 +334,21 @@ class MessageList(generics.ListCreateAPIView):
         #### TODO well just exclude is_author field as it is calculated on frontend
         # probably like this
         data = serializer.data
-        data['is_author'] = user.id == data['author']
         data['username'] = user.username
         pusher_client.trigger(f'chat-{message.chat.id}', 'new-message', data)
+
+        ## notifications
+        notifications = [
+            Notification(user=notified_user, chat=chat, message=message)
+            for notified_user in chat.notified_users.all()
+            if notified_user != user
+        ]
+        Notification.objects.bulk_create(notifications)
+
+
+class NotificationList(generics.ListCreateAPIView):
+    serializer_class = NotificationSerializer
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Notification.objects.filter(user=user, read=False).order_by('-timestamp')

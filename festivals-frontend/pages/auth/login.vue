@@ -6,12 +6,37 @@
         width="100%"
     >
         <v-card class="mx-auto px-8 py-8">
+            <v-alert
+                v-if="errorMessage"
+                class="mb-4"
+                color="error"
+                variant="flat"
+                closable
+            >
+            {{ errorMessage }}
+            </v-alert>
             <h1>Welcome!</h1>
             <br>
             <v-form @submit.prevent="login">
-                <v-text-field v-model="credentials.usernameOrEmail" label="Username or email" clearable variant="outlined"></v-text-field>
-                <v-text-field type="password" v-model="credentials.password" label="Password" clearable variant="outlined"></v-text-field>
-                <v-btn type="submit" color="primary" class="d-block mx-auto">LOGIN</v-btn>
+                <v-text-field 
+                    v-model="credentials.usernameOrEmail" 
+                    :rules="[rules.required]"
+                    label="Username or email" 
+                    clearable 
+                    variant="outlined"
+                >
+                </v-text-field>
+                <v-text-field 
+                    :type="normalTextPass ? 'text' : 'password'"
+                    :rules="[rules.required]"
+                    v-model="credentials.password"
+                    label="Password"  
+                    variant="outlined"
+                    :append-inner-icon="normalTextPass ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="normalTextPass = !normalTextPass"
+                >
+                </v-text-field>
+                <v-btn type="submit" color="primary" class="d-block mx-auto mt-4">LOGIN</v-btn>
 
                 <br>
                 <p class="text-center">Don't have an account? <NuxtLink to="/auth/register">Sign-in</NuxtLink></p>
@@ -31,10 +56,24 @@ import * as requests from '../services/requests'
         password: ''
     })
 
+    const normalTextPass = ref(false)
+    const errorMessage = ref('')
+
+    /* DJANGO DEFAULTS
+        - A password can’t be too similar to the users other personal information.
+        - A password must contain at least 8 characters.
+        - A password can’t be a commonly used password.
+        - A password can’t be entirely numeric.
+    */
+    const rules = {
+        required: value => !!value || 'Required.',
+    }
+
     // responseData only if error i think
     const login = async () => {
         if (credentials.value.password && credentials.value.password) {
             const responseData = await requests.login(credentials.value)
+            errorMessage.value = `${responseData}!`
         }
     }
 </script>

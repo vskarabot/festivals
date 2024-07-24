@@ -110,7 +110,7 @@ export const login = async (data) => {
 
     const responseData = await response.json()
     if (responseData.detail) {
-        console.log(responseData.detail)
+        return responseData.detail
     }
     else {
         setTokens(responseData.access, responseData.refresh)
@@ -620,6 +620,68 @@ export const likeComment = async(commentId, action) => {
         body: JSON.stringify({
             'action': action
         })
+    })
+
+    return response
+}
+
+
+
+
+// CHAT  DETAILS
+export const chatDetails1 = async(festivalId, chatId) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await $fetch(`http://localhost:8000/festivals/${festivalId}/chats/${chatId}/detail`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        }
+    })
+
+    return response
+}
+
+// NOTIFICATIONS ENABLE/DISABLE
+export const manageNotifications = async(festivalId, chatId, value) => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await $fetch(`http://localhost:8000/festivals/${festivalId}/chats/${chatId}/detail`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        },
+        body: JSON.stringify({
+            notify_user: value
+        })
+    })
+
+    return response
+}
+
+
+// GET NOTIFICATIONS
+
+export const getNotifications = async() => {
+
+    const { isAuthenticated } = authentication()
+    await isAuthenticated()
+    const { access } = authentication()
+
+    const response = await $fetch(`http://localhost:8000/notifications/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${access.value}`
+        }
     })
 
     return response

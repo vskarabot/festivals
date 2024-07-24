@@ -1,6 +1,6 @@
 <template>
     <v-card-actions>
-        <v-btn color="primary" variant="plain" text="Explore" :to="`/festivals/${festivalId}`"></v-btn>
+        <v-btn color="teal-lighten-1" text="Explore" :to="`/festivals/${festivalId}`"></v-btn>
 
         <v-spacer></v-spacer>
 
@@ -9,7 +9,7 @@
 
     <v-expand-transition>
         <div v-show="show">
-            <v-divider></v-divider>
+            <v-divider thickness="2"></v-divider>
 
             <v-card-text>
                 {{ festivalInfo }}

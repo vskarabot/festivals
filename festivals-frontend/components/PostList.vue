@@ -1,7 +1,7 @@
 <template>
-    <v-sheet class="mx-auto" max-width="800">
-        <v-card class="mx-auto rounded-0" variant="flat">
-            <v-card class="mx-auto px-2 py-4" max-width="500" flat>
+        <v-card class="mx-auto rounded-0" variant="flat" color="primary">
+            <v-card class="mx-auto px-2 py-4" max-width="500" variant="flat" rounded="0" color="primary">
+                <v-card-title class="text-h4 px-0">News</v-card-title>
                 <v-text-field
                     v-model="searchString"
                     class="mt-4"    
@@ -41,11 +41,15 @@
                     </v-col>                    
                 </v-row>
                 <v-btn @click="addPost" v-if="festivalId" rounded="xl" prepend-icon="mdi-plus" color="primary">Add post</v-btn>
-            </v-card>
+            
+                <v-divider thickness="3"></v-divider>
+
+            
+            </v-card>            
             <v-sheet v-if="showLoading" class="text-center my-2">
                 <v-progress-circular indeterminate></v-progress-circular>
             </v-sheet>
-            <v-sheet v-for="(post, index) in posts">
+            <v-sheet v-for="(post, index) in posts" color="primary" class="mx-4">
                 <PostDetail :key="post.id" :index="index" :post="post" @like="reaction('like', post.id, index)"
                 @dislike="reaction('dislike', post.id, index)" @delete="deletePost" />
             </v-sheet>
@@ -53,7 +57,6 @@
                 <v-card-text>No posts found!</v-card-text>
             </v-sheet>
         </v-card>
-    </v-sheet>
 
 </template>
 

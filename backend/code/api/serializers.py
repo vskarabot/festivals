@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from rest_framework import serializers
-from api.models import Festival, CustomUser, Post, Chat, Message, Comment
+from api.models import  Festival, CustomUser, Notification, Post, Chat, Message, Comment
 from djoser.serializers import UserCreateSerializer
 from django.db.models import Count
 
@@ -209,12 +209,16 @@ class CommentSerializer(serializers.ModelSerializer):
     
 
 class ChatSerializer(serializers.ModelSerializer):
+    notify_user = serializers.SerializerMethodField()
+
     class Meta:
         model = Chat
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'notify_user', 'notified_users']
+
+    def get_notify_user(self, obj):
+        return self.context['request'].user in obj.notified_users.all()
 
 class MessageSerializer(serializers.ModelSerializer):
-    is_author = serializers.SerializerMethodField()
     time_string = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
 
@@ -226,16 +230,44 @@ class MessageSerializer(serializers.ModelSerializer):
             'time',
             'time_string', 
             'author', 
-            'is_author',
             'username'
         ]
         read_only_fields = ['author']
-
-    def get_is_author(self, obj):
-        return self.context['request'].user == obj.author
     
     def get_time_string(self, obj):
         return readable_time(obj)
     
     def get_username(self, obj):
         return obj.author.username
+
+def readable_time_notifications(obj):
+    now = datetime.now(obj.timestamp.tzinfo)
+    difference = now - obj.timestamp
+
+    if difference < timedelta(seconds=60):
+        return "now"
+    elif difference < timedelta(minutes=60):
+        minutes = difference.seconds // 60
+        return f"{minutes}min"
+    elif difference < timedelta(hours=24):
+        hours = difference.seconds // 3600
+        return f"{hours}h"
+    elif difference < timedelta(days=30):
+        days = difference.days
+        return f"{days} day{'s' if days > 1 else ''}"
+    else:
+        return "Older"
+    
+class NotificationSerializer(serializers.ModelSerializer):
+    message_text = serializers.CharField(source='message.text', read_only=True)
+    message_username = serializers.CharField(source='message.author.username', read_only=True)
+    festival = serializers.IntegerField(source='chat.festival.id', read_only=True)
+    chat_name = serializers.CharField(source='chat.name', read_only=True)
+    time_string = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'timestamp', 'read', 'user', 'chat', 'message', 'festival', 'message_username', 'message_text', 'chat_name', 'time_string']
+
+    def get_time_string(self, obj):
+        return readable_time_notifications(obj)

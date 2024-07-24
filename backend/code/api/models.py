@@ -104,6 +104,9 @@ class Chat(models.Model):
     # one-to-many relationship
     festival = models.ForeignKey(Festival, on_delete=models.CASCADE, related_name='festival_chat')
 
+    # many-to-many
+    notified_users = models.ManyToManyField(CustomUser, related_name='chat_notifications')
+
 
 class Message(models.Model):
     text = models.TextField()
@@ -116,5 +119,13 @@ class Message(models.Model):
 
     class Meta:
         ordering = ['-time']
-    
 
+
+class Notification(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    # one-to-many
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)

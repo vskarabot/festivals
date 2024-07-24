@@ -1,7 +1,4 @@
 <template>
-    <v-sheet class="mx-auto" max-width="500">
-        <v-divider></v-divider>
-        
         <v-bottom-sheet v-model="showBottomSheet" inset>
             <v-list>
                 <v-list-item
@@ -24,25 +21,26 @@
             </v-list>
         </v-bottom-sheet>
         
-        <v-card :to="`/forum/${props.post.festival}/post/${props.post.id}`" class="mx-auto" variant="flat" rounded="xl">
-            <template v-slot:prepend>
-                <v-chip
-                    variant="text"
-                    class="ma-0 pa-0"
-                >
-                    <v-icon icon="mdi-account" class="mr-1"></v-icon>
-                    {{ user }}
-                    <span class="mx-2">•</span>
-                </v-chip>
-
-                <v-card-subtitle class="my-0 py-0">
+        <v-card
+            max-width="500"
+            :to="`/forum/${props.post.festival}/post/${props.post.id}`" 
+            class="mx-auto mb-4" 
+            variant="flat" 
+            rounded="xl" 
+            color="secondary"
+        >
+            <v-row>
+                <v-col cols="10" class="d-flex align-center pl-7 pt-6 pb-0">
                     <NuxtLink :to="{ name: 'festivals-id', params: { id: `${post.festival}`} }">
                         <v-chip
-                            variant="outlined"
-                            class="px-0"
-                            rounded="sm"
+                            :variant="hoverFestName ? 'elevated' : 'text'"
+                            :color="hoverFestName ? 'warning' : 'teall1'"
+                            :class="hoverFestName ? 'px-2' : 'px-0'"
+                            rounded="md"
+                            @mouseover="hoverFestName = true"
+                            @mouseleave="hoverFestName = false"
                         >
-                            {{ post.festival_name }},
+                            {{ post.festival_name }}
                         </v-chip>
                     </NuxtLink>
                     <v-chip
@@ -50,22 +48,34 @@
                         class="px-0"
                         rounded="sm"
                     >
-                        &nbsp;{{ post.time_string }}
+                        &nbsp;•&nbsp;{{ post.time_string }}<span v-if="post.edited">&nbsp;(edited)</span>
                     </v-chip>
-                    <span v-if="post.edited">&nbsp;(edited)</span>
-                </v-card-subtitle>
+                </v-col>
+                <v-col cols="2" class="d-flex align-center justify-end pt-6 pr-6 pb-0">
+                    <v-icon @click.prevent="showBottomSheet=true" icon="mdi-dots-vertical"></v-icon>
+                </v-col>
+            </v-row>
+            <v-row class="mt-4">
+                <v-col class="d-flex align-center pl-4 pt-0">
+                    <v-chip
+                        size="small"
+                        color="white"
+                        variant="text"
+                    >
+                        <v-icon icon="mdi-account"></v-icon>
+                        {{ user }}
+                    </v-chip>
+                    <ChipLabel :label="post.label"/>
+                </v-col>
+                <v-divider thickness="2" color="primary" opacity="10"></v-divider>
+            </v-row>
             
-            </template>
-            <template v-slot:append>
-                <ChipLabel :label="post.label" />
-                <v-icon class="ml-2" icon="mdi-dots-horizontal" @click.prevent="showBottomSheet=true"></v-icon>
-            </template>
-            <v-card-title>{{ post.title }}</v-card-title>
+            <v-card-title class="my-2">{{ post.title }}</v-card-title>
             <v-card-text>{{ post.text }}</v-card-text>
             <v-card-actions>
                 <v-btn 
                     v-if="post.user_likes" 
-                    color="primary" 
+                    color="blue-darken-2" 
                     size="small" 
                     rounded 
                     variant="elevated" 
@@ -77,13 +87,14 @@
                 <v-btn 
                     v-else 
                     size="small" 
-                    :color="hoverLike ? 'primary' : 'blue-grey-darken-1'"
-                    :variant="hoverLike ? 'outlined' : 'tonal'" 
+                    :color="hoverLike ? 'white' : 'card'"
+                    variant="flat"
                     rounded
                     prepend-icon="mdi-thumb-up-outline" 
                     @click.prevent="emitEvent('like')"
                     @mouseover="hoverLike = true"
                     @mouseleave="hoverLike = false"
+                    @mousedown="hoverDislike = false"
                 >
                 {{ post.number_of_likes }}
                 </v-btn>
@@ -102,21 +113,21 @@
                 <v-btn 
                     v-else 
                     size="small" 
-                    :color="hoverDislike ? 'red' : 'blue-grey-darken-1'"
-                    :variant="hoverDislike ? 'outlined' : 'tonal'" 
+                    :color="hoverDislike ? 'white' : 'card'"
+                    variant="flat"
                     rounded
                     prepend-icon="mdi-thumb-down-outline" 
                     @click.prevent="emitEvent('dislike')"
                     @mouseover="hoverDislike = true"
                     @mouseleave="hoverDislike = false"
+                    @mousedown="hoverDislike = false"
                 >
                 {{ post.number_of_dislikes }}
                 </v-btn>
                 
-                <v-btn width="100" size="small" color="blue-grey-darken-1" @click.prevent="openPost" variant="tonal" rounded prepend-icon="mdi-comment">{{ post.number_of_comments }}</v-btn>
+                <v-btn width="100" size="small" color="card" variant="flat" @click.prevent="openPost" rounded prepend-icon="mdi-comment-outline">{{ post.number_of_comments }}</v-btn>
             </v-card-actions>
         </v-card>
-    </v-sheet>
 </template>
 
 <script setup>
@@ -129,6 +140,7 @@
     const showBottomSheet = ref(false)
     const hoverLike = ref(false)
     const hoverDislike = ref(false)
+    const hoverFestName = ref(false)
 
     const emit = defineEmits(['like', 'dislike', 'delete'])
 
@@ -156,10 +168,3 @@
         })
     }
 </script>
-
-<style>
-    a {
-        text-decoration: none;
-        color: inherit;
-    }
-</style>

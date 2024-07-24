@@ -25,7 +25,7 @@
                             <v-text-field :rules="[rules.required]" type="email" v-model="credentials.email" label="E-mail" clearable variant="outlined"></v-text-field>
                             <v-text-field :rules="[rules.required]" type="password" v-model="credentials.password" label="Password" clearable variant="outlined"></v-text-field>
                             <v-text-field :rules="[rules.required, rules.passwordsMatching]" type="password" v-model="retypePassword" label="Confirm password" clearable variant="outlined"></v-text-field>
-                            <v-text-field :rules="[rules.required]" type="date" :max="maxDate" v-model="credentials.birthDate" label="Select your day of birth" clearable variant="outlined"></v-text-field>
+                            <v-text-field :rules="[rules.required]" type="date" :max="maxDate" v-model="credentials.birthDate" label="Select your day of birth" variant="outlined"></v-text-field>
                             <v-radio-group label="Gender:" inline v-model="credentials.selectedGender">
                                 <v-radio label="Male" value="M"></v-radio>
                                 <v-radio label="Female" value="F"></v-radio>
