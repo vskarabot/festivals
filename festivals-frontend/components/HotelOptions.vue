@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="600">
     <template v-slot:activator="{ props: activatorProps }">
-      <v-btn prepend-icon="mdi-bed" color="teal-lighten-1" text="Places to stay" variant="outlined"
+      <v-btn prepend-icon="mdi-bed" color="teal-lighten-1" text="Places to stay" variant="flat"
         v-bind="activatorProps"></v-btn>
     </template>
 

@@ -76,8 +76,6 @@
     import * as requests from '../../services/requests'
     import { useRoute } from 'vue-router'
 
-    import Pusher from 'pusher-js'  
-
     const emojiHover = ref(false)
     const sendHover = ref(false)
 
@@ -112,16 +110,12 @@
         // fetch chat details (will also return if user should get notification as notify_user)
         chatDetails.value = await requests.chatDetails1(festivalId, chatId)
         
-        // Pusher for new messages          
-        const pusher = new Pusher('e08dbedd3b10916330c8', {
-            cluster: 'eu',
-        })            
-        const channel = pusher.subscribe(`chat-${chatId}`);        
+        const channel = useNuxtApp().$pusher.subscribe(`chat-${chatId}`)          
         // Subscribe to the channel and bind to events -> channel chat-{chatId} and event new-message
         channel.bind('new-message', (data) => {
             // push live messages to the messages array
             apiMessages.value.push(data)
-            
+
             nextTick (() => {
                 const element = infiniteScroll?.value.$el
                 heightValues.value.scrollHeight = element.scrollHeight
@@ -131,10 +125,6 @@
         })
 
         jumpToMessage()
-
-        onBeforeRouteLeave(() => {
-            pusher.disconnect()
-        })
     })
 
     onActivated(async () => {        

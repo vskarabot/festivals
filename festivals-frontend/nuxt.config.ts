@@ -10,7 +10,8 @@ export default defineNuxtConfig({
   },
   plugins: [
     '@/plugins/vuetify.ts',
-    '@/plugins/firebase.ts'
+    '@/plugins/firebase.ts',
+    '@/plugins/pusher.ts',
   ],
   devtools: { enabled: true },
   modules: [

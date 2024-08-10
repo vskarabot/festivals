@@ -107,7 +107,7 @@
                                 <HotelOptions :options="hotelOptions" />
                             </v-col>
                             <v-col cols="12" sm="8">
-                                <Directions @emit-dirs-time-distance="handleDirections" @show-directions="showOrHideDirections" :lat="festival.lat" :lon="festival.lon" />
+                                <Directions @emit-dirs-time-distance="handleDirections" @show-directions="showOrHideDirections" :lat="festival.lat" :lon="festival.lon" :userLocation="userLocation"/>
                             </v-col>
                         </v-row>
                     </v-expansion-panel-text>
@@ -131,6 +131,8 @@
     const festival = ref('')
     const locationName = ref('')
 
+    const userLocation = ref([])
+
     const hotelOptions = ref({})
 
     // false in beginning only so that v-if in Location is easier -> we do have to set value to true in handleDirections because of this
@@ -143,6 +145,10 @@
     // check if exists with USEFETCH (we need credentials)
 
     onMounted(async () => {
+
+        // get users location
+        getUserLocation()
+
         // get festival by id
         const response1 = await requests.getFestivalById(id)
         festival.value = await response1.json()
@@ -222,5 +228,26 @@
         const locale = navigator.language || 'en-US'
 
         return new Intl.DateTimeFormat(locale).format(date)
+    }
+
+    const getUserLocation = () => {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation.value = [position.coords.latitude, position.coords.longitude]
+                },
+                (error) => {
+                    console.error(error.code)
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0,
+                }
+            )
+        }
+        else {
+            console.log("Geolocation not supported in this browser!")
+        }
     }
 </script>

@@ -43,16 +43,16 @@
         </v-sheet>
         <v-divider></v-divider>
 
-        <v-card-title>
+        <v-card-title class="font-weight-bold">
         {{ festival.name }}
         </v-card-title>
 
         <HomeLocationName :festival="festival" />
 
+        <v-icon icon="mdi-calendar"></v-icon>
         <v-card-subtitle>
-        {{ festival.date_start }} {{ festival.date_end }}
+        {{ dateFormat(festival.date_start) }} - {{ dateFormat(festival.date_end) }}
         </v-card-subtitle>
-
 
         <!-- so its easier to open each card info -->
         <HomeShowInfo :festivalId="festival.id" :festivalInfo="festival.info" />
@@ -67,7 +67,12 @@
 
     const handleImageError = (id) => {
         props.festivals.filter(festival => festival.id === id)[0].img = 'error'
-        console.log(props.festivals)
     }
 
+    const dateFormat = (dateString) => {
+        const date = new Date(dateString)
+        const locale = navigator.language || 'en-US'
+
+        return new Intl.DateTimeFormat(locale).format(date)
+    }
 </script>

@@ -1,5 +1,6 @@
 <template>
-    <v-card-subtitle>
+    <v-icon icon="mdi-map-marker"></v-icon>
+    <v-card-subtitle class="pb-4">
         {{ locationName }}
     </v-card-subtitle>
 </template>
@@ -14,5 +15,7 @@
     const locationName = ref('')
 
     const mbLoc = await $fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${props.festival.lon},${props.festival.lat}.json?access_token=${runtimeConfig.public.mapboxToken}`)
-    locationName.value = mbLoc.features?.[0]?.place_name?.split(" ")?.slice(-1)[0]
+    
+    const addressLength = mbLoc?.features[0]?.context?.length
+    locationName.value = mbLoc.features[0].text + ", " + mbLoc.features[0]?.context[addressLength - 1]?.text
 </script>
