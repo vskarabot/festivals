@@ -30,7 +30,7 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
     const emit = defineEmits(['location-changed'])
 
     // mapbox constants
-    const MAP_LOOK = 'mapbox://styles/mapbox/outdoors-v12'
+    const MAP_LOOK = 'mapbox://styles/mapbox/streets-v12'
     const INITIAL_ZOOM = 16
 
     onMounted(() => {        
@@ -128,37 +128,30 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
                         'line-cap': 'round'
                     },
                     'paint': {
-                        'line-color': '#005b96',
-                        'line-width': 6,
-                        'line-opacity': 0.6
+                        'line-color': '#26A69A',
+                        'line-width': 5,
                     }
-                });
-            });
+                })
+            })
 
-            new mapboxgl.Marker()
+            new mapboxgl.Marker({ color: 'red' })
                 .setLngLat(props.directions.geoLines[0])
                 .addTo(map)
 
             // center map -> we need fitBounds method
-            // takes most south-west and most north-east coordinate and recenters
 
-            // most south-west -> min lon & min lat
-            // most north-east -> max lon & max lat
-            const lonArray = props.directions.geoLines.map(([lon]) => lon)
-            const latArray = props.directions.geoLines.map(([, lat]) => lat)
-            
-            const minLon = lonArray.reduce((a,b) => Math.min(a,b))
-            const maxLon = lonArray.reduce((a,b) => Math.max(a,b))
-            const minLat = latArray.reduce((a,b) => Math.min(a,b))
-            const maxLat = latArray.reduce((a,b) => Math.max(a,b))
+            // bounds recalculate min and max each iteration
+            const bounds = new mapboxgl.LngLatBounds()
+            props.directions.geoLines.forEach(([lon, lat]) => {
+                bounds.extend([lon, lat])
+            })
 
-            // substract bit more so it's not completely on border
-            const southWest = [minLon, minLat]
-            const northEast = [maxLon, maxLat]
-
-            // recentre on map
+            // the end result is most south-west and most north-east point    
+            // recentre on map with padding so locations are not completely on border
+            const padding = { top: 50, bottom: 50, left: 50, right: 50 };
             map.fitBounds(
-                [southWest, northEast]
+                bounds,
+                { padding }
             )
         }
 
@@ -185,11 +178,11 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
         position: absolute;
         top: 10px; /* Adjust as needed */
         left: 10px; /* Adjust as needed */
-        background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+        background: #0a0f21;
         padding: 10px;
         border-radius: 5px;
         z-index: 1; /* Ensure it appears above the map */
-        text-align: center;
+        text-align: center; 
     }
 
     .marker {

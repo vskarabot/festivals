@@ -213,4 +213,9 @@ const updateCommentRef = async() => {
 const makeParams = () => {
     return `?sort=${sort.value}`
 }
+
+watch(comments, (beforeAdd, afterAdd) => {
+    // TODO - remove emits as this should sufice
+    console.log("New comment added")
+})
 </script>
