@@ -13,54 +13,73 @@
                                 <v-btn color="teal-lighten-1" icon="mdi-plus" to="/festivals/add-edit-festival"></v-btn>
                             </v-col>
                         </v-row>
-                        <v-divider thickness="2"></v-divider>
+                        <v-divider thickness="3"></v-divider>
                         <v-card-title class="text-h4 text-left px-0">Festivals </v-card-title>
-                        <v-text-field
-                            class="mt-4"    
-                            v-model="query" 
-                            @input="search" 
-                            label="Search festivals" 
-                            variant="outlined" 
-                            append-inner-icon="mdi-magnify"
-                            density="compact"
-                            hide-details
-                            single-line
-                            rounded
-                            color="teal-lighten-1"
-                        >
-                        </v-text-field>
-                        <v-select
-                            v-model="selectedSort"
-                            class="mt-4"
-                            label="Sort by"
-                            :items="['Date', 'Popularity']"
-                            variant="outlined"
-                            density="compact"
-                            rounded
-                            max-width="150"
-                            color="teal-lighten-1"
-                            @update:modelValue="getOnlySelectedData"
-                        ></v-select>
-
+                        
                         <v-row>
                             <v-col>
-                                <v-switch v-model="upcoming" color="teal-lighten-1" label="Show only upcoming" @change="getOnlySelectedData"></v-switch>
-                            </v-col>
-                            <v-col>
-                                <v-switch v-model="favourites" color="teal-lighten-1" label="Show my favorites only" @change="getOnlySelectedData"></v-switch>
+                                <v-text-field
+                                    class="mt-4"    
+                                    v-model="query" 
+                                    @input="search" 
+                                    label="Search festivals" 
+                                    variant="outlined" 
+                                    append-inner-icon="mdi-magnify"
+                                    density="compact"
+                                    hide-details
+                                    single-line
+                                    rounded
+                                    color="teal-lighten-1"
+                                >
+                                </v-text-field>
                             </v-col>
                         </v-row>
 
-                        <v-divider thickness="2"></v-divider>
-                    </v-card>
+                        <v-row>
+                            <v-col cols="12" sm="6">
+                                <v-text-field v-model="startDate" type="date" variant="outlined" hide-details label="Start date" density="compact" rounded color="teall1" clearable @change="getOnlySelectedData" @click:clear="getOnlySelectedData"></v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-text-field v-model="endDate" type="date" variant="outlined" hide-details label="End date" density="compact" rounded color="teall1" clearable @change="getOnlySelectedData" @click:clear="getOnlySelectedData"></v-text-field>
+                            </v-col>
+                        </v-row>
 
+                        <v-row>
+                            <v-col cols="12" sm="6">
+                                <v-select
+                                    v-model="selectedSort"
+                                    label="Sort by"
+                                    :items="['Date', 'Popularity']"
+                                    variant="outlined"
+                                    density="compact"
+                                    rounded
+                                    hide-details
+                                    color="teal-lighten-1"
+                                    @update:modelValue="getOnlySelectedData"
+                                ></v-select>
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-select
+                                    v-model="selectedFilter"
+                                    label="Filter"
+                                    :items="filterItems"                                    
+                                    variant="outlined"
+                                    density="compact"
+                                    rounded
+                                    hide-details
+                                    color="teal-lighten-1"
+                                    @update:modelValue="getOnlySelectedData"
+                                ></v-select>
+                            </v-col>
+                        </v-row>
+                        <v-divider thickness="3" class="mt-4"></v-divider>
+                    </v-card>
                     <!-- show results if found -->
-                    <v-progress-circular v-if="loading" indeterminate class="my-2"></v-progress-circular>  
+                    <v-progress-circular v-if="loading" indeterminate class="my-2" color="primary"></v-progress-circular>  
                     <HomeHPFestivalCard
                         v-if="festivals.length"
                         :festivals="festivals" 
-                    />
-                    <v-sheet v-else>No results found</v-sheet>           
+                    />        
                                 
                 </v-card>
             </v-sheet>
@@ -75,8 +94,16 @@
 
     const query = ref('')
     const selectedSort = ref('Date')
-    const upcoming = ref(false)
-    const favourites = ref(false)
+    const filterItems = ref(
+        [
+            { title: 'All', value: 'all'},
+            { title: 'My favourites', value: 'favourites'},
+        ]
+    )
+    const selectedFilter = ref({ title: 'All', value: 'all'})
+
+    const startDate = ref('')
+    const endDate = ref('')
 
     const loading = ref(false)
 
@@ -116,10 +143,12 @@
         if (query.value.length > 2)
             params = params + `search=${query.value}&`
         params = params + `sort=${selectedSort.value}&`
-        if (upcoming.value)
-            params = params + `upcoming=True&`
-        if (favourites.value)
+        if (selectedFilter.value !== 'all')
             params = params + `favourites=True&`
+        if (startDate.value)
+            params = params + `start_date=${startDate.value}&`
+        if (endDate.value)
+            params = params + `end_date=${endDate.value}&`
 
         return params
     }

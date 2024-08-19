@@ -240,22 +240,26 @@ export const updateFestival = async (id, data) => {
 
     const { access } = authentication()
 
+    console.log(data)
+
+    const body = {
+        name: data.name,
+        info: data.info,
+        website: data.website,
+        lat: data.lat,
+        lon: data.lon,
+        date_start: data.date_start,
+        date_end: data.date_end,
+    }
+    if (data.img) body.img = data.img
+
     const response = await fetch(urls.FESTIVAL_DETAIL(id), {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `JWT ${access.value}`
         },
-        body: JSON.stringify({
-            name: data.name,
-            info: data.info,
-            website: data.website,
-            lat: data.lat,
-            lon: data.lon,
-            date_start: data.date_start,
-            date_end: data.date_end,
-            img: data.img
-        })
+        body: JSON.stringify(body)
     })
     
     return response
@@ -516,12 +520,12 @@ export const getMoreMessages = async(url) => {
 }
 
 // SEND MESSAGE
-export const sendMessage = async(festivalId, chatId, message) => {
+export const sendMessage = async(festivalId, chatId, message, url) => {
     
         const { isAuthenticated } = authentication()
         await isAuthenticated()
         const { access } = authentication()
-    
+
         const response = await fetch(urls.MESSAGES(festivalId, chatId), {
             method: 'POST',
             headers: {
@@ -529,7 +533,8 @@ export const sendMessage = async(festivalId, chatId, message) => {
                 'Authorization': `JWT ${access.value}`
             },
             body: JSON.stringify({
-                text: message
+                text: message,
+                img: url
             })
         })
 

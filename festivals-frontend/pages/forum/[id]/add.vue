@@ -1,7 +1,15 @@
 <template>
-    <div>Add</div>
-    <PostForm :post="post" />
-    <button @click="add">Add post</button>
+    <v-sheet color="primary">
+        <PostForm :post="post" />
+        <v-card width="600" color="secondary" class="mx-auto pb-4 text-center" rounded="0">
+            <v-btn class="mr-2" color="warning" @click="cancel">
+                Cancel
+            </v-btn>
+            <v-btn color="teal-lighten-1" @click="add">
+                Add
+            </v-btn>
+        </v-card>
+    </v-sheet>
 </template>
 
 <script setup>
@@ -34,5 +42,9 @@
             name: 'forum-id-post-pid',
             params: { pid: post.value.id }
         })
+    }
+
+    const cancel = () => {
+        useRouter().back()
     }
 </script>

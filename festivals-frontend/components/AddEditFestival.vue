@@ -8,6 +8,11 @@
             <v-textarea v-model="festival.info" variant="outlined" label="Information" rounded density="compact" color="teal-lighten-1"
                 prepend-icon="mdi-information">
             </v-textarea>
+
+            <v-file-input v-model="festival.img" variant="outlined" label="Image" rounded density="compact" color="teal-lighten-1"
+                prepend-icon="mdi-image">
+            </v-file-input>
+
             <v-text-field v-model="festival.date_start" variant="outlined" type="date" label="Start date" rounded color="teal-lighten-1"
                 density="compact" prepend-icon="mdi-calendar-start">
             </v-text-field>
@@ -17,12 +22,9 @@
             <v-text-field v-model="festival.website" variant="outlined" label="Website" rounded density="compact" color="teal-lighten-1"
                 prepend-icon="mdi-web">
             </v-text-field>
-            <v-file-input v-model="festival.img" variant="outlined" label="Image" rounded density="compact" color="teal-lighten-1"
-                prepend-icon="mdi-image">
-            </v-file-input>
-            <v-text-field v-if="locationName" class="mt-4 text-left" variant="outlined" readonly rounded density="compact" 
+            <v-text-field v-if="festival.location" class="mt-4 text-left" variant="outlined" readonly rounded density="compact" 
                 prepend-icon="mdi-map-marker">
-                {{ locationName }}
+                {{ festival.location }}
             </v-text-field> 
             <v-text-field v-model="festival.lat" variant="outlined" label="Latitude" rounded density="compact" color="teal-lighten-1"
                 prepend-icon="mdi-latitude">
@@ -46,12 +48,8 @@
 <script setup>
     import * as requests from '../services/requests'
 
-    const runtimeConfig = useRuntimeConfig()
-
     const id = ref(null)
     
-    const locationName = ref('')
-
     const festival = ref({
         name: '',
         info: '',
@@ -71,14 +69,12 @@
     onMounted(async () => {
         id.value = useRoute().params.id
 
-        const mbLoc = await $fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${festival.value.lon},${festival.value.lat}.json?access_token=${runtimeConfig.public.mapboxToken}`)
-        locationName.value = mbLoc.features?.[0]?.place_name
-
         if (id.value) {
 
             // fetch data to edit specific festival
             const response = await requests.getFestivalById(id.value)
             festival.value = await response.json()
+            console.log(festival.value)
         }
         else {
             
@@ -147,7 +143,7 @@
 
     const editFestival = async() => {
         const addData = {}
-        if (festival.value.img) {
+        if (festival.value.img.name) {
             const url = await uploadImage()
             if (url) {
                 addData.img = url
@@ -173,8 +169,6 @@
         festival.value.lat = location[0]
         festival.value.lon = location[1]
         // properties.text & properties.place_name
-
-        locationName.value = properties.place_name
     }
 
     const cancel = () => {

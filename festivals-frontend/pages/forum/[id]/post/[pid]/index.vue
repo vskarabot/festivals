@@ -119,7 +119,7 @@
             <v-card v-if="comments && comments.length" v-for="(comment, index) in comments" color="primary" variant="flat">
                 <Comment @new-comment="updateCommentRef" :key="comment.id" :index="index" :comment="comment" :level="level" />
             </v-card>
-            <v-sheet v-else class="ml-4">
+            <v-sheet v-else class="ml-4" color="primary">
                 No comments yet
             </v-sheet>
 
@@ -201,6 +201,7 @@ const user = computed(() => {
 
 const addComment = async() => {
     const response = await requests.addComment(post.value.id, newComment.value)
+    newComment.value = ''
     textArea.value = false
 
     fetchComments()

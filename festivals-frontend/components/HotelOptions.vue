@@ -121,15 +121,19 @@ const props = defineProps({
   }
 })
 
-const hotelReactiveOptions = ref({
-  lat: props.options.lat,
-  lon: props.options.lon,
-  adults: props.options.adults,
-  rooms: props.options.rooms,
-  checkin: props.options.checkin,
-  checkout: props.options.checkout,
-  maxPricePerNight: props.options.maxPricePerNight,
-  order: orderOptions[0].value
+const hotelReactiveOptions = ref({})
+
+onMounted(() => {
+  hotelReactiveOptions.value = {
+    lat: props.options.lat,
+    lon: props.options.lon,
+    adults: props.options.adults,
+    rooms: props.options.rooms,
+    checkin: props.options.checkin,
+    checkout: props.options.checkout,
+    maxPricePerNight: props.options.maxPricePerNight,
+    order: orderOptions[0].value
+  }
 })
 
 const getHotels = async () => {

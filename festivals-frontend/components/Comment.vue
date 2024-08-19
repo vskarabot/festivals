@@ -86,10 +86,14 @@
             </v-col>
         </v-row>
     </v-card>
-    <v-chip size="small" v-if="comment.child_comments.length" @click="toggleReplies" :class="`mx-auto ml-${level * 4} my-1`" color="teall1">
-        <v-icon icon="mdi-dots-horizontal"></v-icon>
-
-        <v-icon icon="mdi-arrow-right-bottom"></v-icon>
+    <v-chip 
+        size="small" 
+        v-if="comment.child_comments.length"
+        @click="toggleReplies" 
+        :class="`mx-auto ml-${level * 4} my-1`" 
+        color="teall1"
+        :text="showReplies === true ? 'Show less' : 'Show more'"
+    >
     </v-chip>
 
     <!-- recursive component -->
@@ -97,7 +101,9 @@
         <Comment v-for="(childComment, childIndex) in comment.child_comments"
             @new-comment="updateCommentRef"
             :key="childComment.id"
-            :index="childIndex" :comment="childComment" :level="level + 1" />
+            :index="childIndex"
+            :comment="childComment"
+            :level="level + 1" />
     </div>
 </template>
 
@@ -120,6 +126,10 @@
     const hoverLike = ref(false)
     const hoverDislike = ref(false)
     const hoverReply = ref(false)
+
+    onMounted(async() => {
+        showReplies.value = props.level < 1 ? true : false
+    })
 
     const toggleReplies = () => {
         showReplies.value = !showReplies.value

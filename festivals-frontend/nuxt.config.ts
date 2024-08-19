@@ -13,6 +13,9 @@ export default defineNuxtConfig({
     '@/plugins/firebase.ts',
     '@/plugins/pusher.ts',
   ],
+  extends: [
+    'nuxt-emoji'
+  ],
   devtools: { enabled: true },
   modules: [
     'nuxt-mapbox'
