@@ -1,47 +1,52 @@
 <template>
-    <v-sheet
-        class="pa-4 text-center mx-auto"
-        max-width="600"
-        rounded="lg"
-        width="100%"
-    >
-        <v-card class="mx-auto px-8 py-8">
-            <v-alert
-                v-if="errorMessage"
-                class="mb-4"
-                color="error"
-                variant="flat"
-                closable
-            >
-            {{ errorMessage }}
-            </v-alert>
-            <h1>Welcome!</h1>
-            <br>
-            <v-form @submit.prevent="login">
-                <v-text-field 
-                    v-model="credentials.usernameOrEmail" 
-                    :rules="[rules.required]"
-                    label="Username or email" 
-                    clearable 
-                    variant="outlined"
+    <v-sheet color="primary">
+        <v-sheet
+            class="pa-4 text-center mx-auto"
+            max-width="600"
+            rounded="lg"
+            width="100%"
+            color="primary"
+        >
+            <v-card class="mx-auto px-8 py-8" color="secondary">
+                <v-alert
+                    v-if="errorMessage"
+                    class="mb-4"
+                    color="error"
+                    variant="flat"
+                    closable
                 >
-                </v-text-field>
-                <v-text-field 
-                    :type="normalTextPass ? 'text' : 'password'"
-                    :rules="[rules.required]"
-                    v-model="credentials.password"
-                    label="Password"  
-                    variant="outlined"
-                    :append-inner-icon="normalTextPass ? 'mdi-eye' : 'mdi-eye-off'"
-                    @click:append-inner="normalTextPass = !normalTextPass"
-                >
-                </v-text-field>
-                <v-btn type="submit" color="primary" class="d-block mx-auto mt-4">LOGIN</v-btn>
-
+                {{ errorMessage }}
+                </v-alert>
+                <h1>Welcome!</h1>
                 <br>
-                <p class="text-center">Don't have an account? <NuxtLink to="/auth/register">Sign-in</NuxtLink></p>
-            </v-form>
-        </v-card>
+                <v-form @submit.prevent="login" v-model="formValid">
+                    <v-text-field 
+                        v-model="credentials.usernameOrEmail" 
+                        :rules="[rules.required]"
+                        label="Username or email" 
+                        clearable 
+                        variant="outlined"
+                        color="teall1"
+                    >
+                    </v-text-field>
+                    <v-text-field 
+                        :type="normalTextPass ? 'text' : 'password'"
+                        :rules="[rules.required]"
+                        v-model="credentials.password"
+                        label="Password"  
+                        variant="outlined"
+                        color="teall1"
+                        :append-inner-icon="normalTextPass ? 'mdi-eye' : 'mdi-eye-off'"
+                        @click:append-inner="normalTextPass = !normalTextPass"
+                    >
+                    </v-text-field>
+                    <v-btn :disabled="!formValid" type="submit" color="teall1" class="d-block mx-auto mt-4">LOGIN</v-btn>
+
+                    <br>
+                    <p class="text-center">Don't have an account? <NuxtLink to="/auth/register">Sign-in</NuxtLink></p>
+                </v-form>
+            </v-card>
+        </v-sheet>
     </v-sheet>
 </template>
 
@@ -58,6 +63,7 @@ import * as requests from '../services/requests'
 
     const normalTextPass = ref(false)
     const errorMessage = ref('')
+    const formValid = ref(false)
 
     /* DJANGO DEFAULTS
         - A password can’t be too similar to the users other personal information.

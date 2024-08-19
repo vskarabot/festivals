@@ -89,7 +89,7 @@
                 </v-col>
             </v-row>
             <v-expansion-panels v-model="defaultPanel">
-                <v-expansion-panel style="background-color: #232C4C;">
+                <v-expansion-panel v-if="festival.info" style="background-color: #232C4C;">
                     <v-expansion-panel-title class="font-weight-bold">
                         Information
                     </v-expansion-panel-title>
@@ -97,7 +97,7 @@
                         {{ festival.info }}
                     </v-expansion-panel-text>
                 </v-expansion-panel>
-                <v-expansion-panel style="background-color: #232C4C;">
+                <v-expansion-panel v-if="festival.lon && festival.lat" style="background-color: #232C4C;">
                     <v-expansion-panel-title class="font-weight-bold">
                         Sleeping options and directions
                     </v-expansion-panel-title>
@@ -145,7 +145,6 @@
     // check if exists with USEFETCH (we need credentials)
 
     onMounted(async () => {
-
         // get users location
         getUserLocation()
 

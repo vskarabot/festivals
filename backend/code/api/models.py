@@ -9,12 +9,12 @@ from .choices import GENDERS, POST_LABELS, COUNTRIES
 # so we can also login with username -> we modify the CustomUserManager to check either un or email
 from django.contrib.auth.models import UserManager
 from django.db.models import Q
+
 class CustomUserManager(UserManager):
     def get_by_natural_key(self, username):
         return self.get(
             Q(**{self.model.USERNAME_FIELD: username}) | Q(**{self.model.EMAIL_FIELD: username})
         )
-
 
 class CustomUser(AbstractUser):
     objects = CustomUserManager()
@@ -39,6 +39,7 @@ class Festival(models.Model):
     website = models.URLField(blank=True, default='No website provided')
     lat = models.FloatField(blank=True, null=True)
     lon = models.FloatField(blank=True, null=True)
+    location = models.CharField(blank=True, null=True, max_length=100)
     
     # null=True so we dont break model - only for testing!!!!!!!!!!
     # TODO : delete those values when creating new db
@@ -109,7 +110,8 @@ class Chat(models.Model):
 
 
 class Message(models.Model):
-    text = models.TextField()
+    text = models.TextField(blank=True, null=True)
+    img = models.CharField(blank=True, null=True)
     time = models.DateTimeField(auto_now_add=True)
 
     # one-to-many relationship
@@ -128,4 +130,4 @@ class Notification(models.Model):
     # one-to-many
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    message = models.ForeignKey(Message, on_delete=models.CASCADE)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='message_notifications')

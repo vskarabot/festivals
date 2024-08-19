@@ -32,6 +32,7 @@
             </v-infinite-scroll>
         </v-card>
         <!-- text input -->
+                
         <v-textarea
             max-width="500"
             class="mx-auto my-4"
@@ -43,20 +44,31 @@
             rows="1"
             row-height="15"
             auto-grow
-            @keyup.enter="sendMessage"
+            @keyup.enter="newMessage.length > 1 || file ? showMessage : false"
         >
+            <!-- reading files if we implement -->
+            <template v-slot:prepend>
+                <v-icon @click="showFileInput" icon="mdi-paperclip"></v-icon>
+
+                <v-file-input
+                    ref="fileInput"
+                    v-model="file"
+                    style="display: none;"
+                ></v-file-input>
+            </template>
             <template v-slot:prepend-inner>
-                <v-btn
-                    icon="mdi-emoticon"
-                    variant="plain"
-                    :color="emojiHover ? 'yellow': 'teall1'"
-                    @mouseleave="emojiHover = false"
-                    @mouseover="emojiHover = true"
-                    @click=""
-                ></v-btn>
+                <NuxtEmoji @on-select="addEmoji" theme="dark">
+                    <template v-slot:button>
+                        <v-btn icon="mdi-emoticon" color="primary"></v-btn>
+                    </template>
+                </NuxtEmoji>
+                <v-chip v-if="file" color="teall1" size="x-small" closable @click:close="removeFile">
+                    <v-card-text>{{ file.name }}</v-card-text>
+                </v-chip>
             </template>
             <template v-slot:append-inner>
                 <v-btn
+                    :disabled="file === null && newMessage.length < 1 ? true : false"
                     icon="mdi-send"
                     variant="plain"
                     color="teall1"
@@ -72,12 +84,16 @@
 </template>
   
 <script setup>
+    import { uploadBytes, ref as storageRef, getDownloadURL } from 'firebase/storage'
+
     import { ref, onMounted } from 'vue'
     import * as requests from '../../services/requests'
     import { useRoute } from 'vue-router'
 
-    const emojiHover = ref(false)
     const sendHover = ref(false)
+
+    const file = ref(null)
+    const fileInput = ref(null)
 
     // ref for infinite scroll
     const infiniteScroll = ref(null)
@@ -115,9 +131,10 @@
         channel.bind('new-message', (data) => {
             // push live messages to the messages array
             apiMessages.value.push(data)
+            setTimes()
 
             nextTick (() => {
-                const element = infiniteScroll?.value.$el
+                const element = infiniteScroll?.value?.$el
                 heightValues.value.scrollHeight = element.scrollHeight
                 heightValues.value.scrollTop = element.scrollTop
                 heightValues.value.clientHeight= element.clientHeight
@@ -127,14 +144,27 @@
         jumpToMessage()
     })
 
+    onBeforeRouteLeave(() => {
+        nextPage.value = "Initial"
+        apiMessages.value = []
+    })
+
     onActivated(async () => {        
         jumpToMessage()
     })
 
-    const sendMessage = () => {
+    const sendMessage = async() => {
         // Send message to API
-        requests.sendMessage(festivalId, chatId, newMessage.value)
-        newMessage.value = ''
+        let url
+        if (file.value) {
+            url = await uploadImage()
+        }
+
+        if (newMessage.value || file.value) {
+            requests.sendMessage(festivalId, chatId, newMessage.value, url)
+            newMessage.value = ''
+            file.value = null
+        }
     }
 
     const load = async({ done }) => {
@@ -146,10 +176,12 @@
             }
             else {
                 response = await requests.getMoreMessages(nextPage.value)
+                apiMessages.value.forEach((message) => {message.messageShowTimeIntervals = ""})
             }
             const responseData = await response.json()              
             nextPage.value = responseData.next
             apiMessages.value.unshift(...responseData.results.reverse())
+            setTimes()
             done('ok')
         }
         else {
@@ -159,7 +191,6 @@
 
     const manageNotifications = async() => {
         const response = await requests.manageNotifications(festivalId, chatDetails.value.id, !chatDetails.value.notify_user)
-        console.log(response)
         chatDetails.value = response
     }
 
@@ -186,6 +217,8 @@
     }
 
     const showDownButton = computed(() => {
+        if (!heightValues.value.scrollTop)
+            return false
         return heightValues.value.scrollHeight - heightValues.value.scrollTop !== heightValues.value.clientHeight
     })
 
@@ -196,6 +229,57 @@
             behavior: 'smooth'
         })  
     }
+
+    const addEmoji = (emoji) => {
+        newMessage.value += emoji
+    }
+
+    const showFileInput = () => {
+        fileInput.value.click()
+    }
+
+    const removeFile = () => {
+        file.value = null
+    }
+
+    const uploadImage = async() => {
+        // storage instance from firebase.ts
+        const storage = useNuxtApp().$storage
+        // reference to location in storage - date to make name unique
+        const fileName = `festival-chat-${chatId}/${Date.now()}-${file.value.name}`
+        const imageRef = storageRef(storage, fileName)
+
+        try {
+            // upload file
+            await uploadBytes(imageRef, file.value)
+            // get file url
+            const url = await getDownloadURL(imageRef)
+            return url 
+        }
+        catch (error) {
+            console.log("Error uploading image")
+        }
+    }
+
+    const setTimes = () => {
+        const { formatTimeDifference } = chatTimes()
+
+        let prev
+        apiMessages.value.forEach((message, index, array) => {
+            if (index === 0) {
+                prev = formatTimeDifference(message.time)
+                message.messageShowTimeIntervals = prev
+            }
+            else {
+                let temp = formatTimeDifference(message.time)
+
+                if (prev !== temp) {
+                    message.messageShowTimeIntervals = temp
+                    prev = temp
+                }
+            }
+        })
+    }
 </script>
 
 <style>
@@ -203,6 +287,9 @@
         left: 50%;
         bottom: 0;
         transform: translate(-50%);
+    }
+    .tippy-content {
+        background-color: #232C4C;
     }
 </style>
   

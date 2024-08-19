@@ -37,17 +37,20 @@
                                             color="card"
                                             variant="flat"
                                             class="no-radius" 
-                                            :to="`/festivals/${notification.festival}/chats/${notification.chat}?message=${notification.message}`"
+                                            @click="openNotification(notification[0].festival, notification[0].chat, notification.slice(-1)[0].message)"
                                         >
-                                            <v-card-text class="pb-0 mb-0"><b>{{ notification.chat_name }}</b> • {{ notification.time_string }}</v-card-text>
-                                            <v-card-subtitle class="mb-4" :opacity="10">User <b>{{ notification.message_username }}</b> wrote: "{{ notification.message_text}}"</v-card-subtitle>
+
+                                            <v-card-text><b style="color: #0a0f21;">{{ notification[0].chat_name }}</b> ({{ formattedTime(notification[0].timestamp) }})</v-card-text>
+
+                                            <v-divider thickness="1" opacity="10" color="primary"></v-divider>
+                                            <v-card-text>You have <b style="color: #0a0f21;">{{ notification.length }}</b> new messages!</v-card-text>
                                         </v-card>
                                     </v-col>
                                     <v-col cols="2">
                                         <v-icon icon="mdi-circle-medium" color="teal-lighten-1"></v-icon>
                                     </v-col>
                                 </v-row>
-                                <v-divider thickness="2"></v-divider>
+                                <v-divider thickness="3" opacity="10" color="primary"></v-divider>
                             </v-list-item>
                             <v-card class="py-2 text-center" rounded="0" color="secondary"><v-btn width="90%"color="teal-lighten-1" rounded="xl">See all</v-btn></v-card>  
                         </v-list>
@@ -55,9 +58,6 @@
                 </v-btn>
 
                 <v-btn icon="mdi-forum" variant="plain" @click="forum"></v-btn>
-
-                <!-- TODO : add some kind of menu to display also username and put next 2 v-btn into one -->
-                <v-btn icon="mdi-account" variant="plain" @click="profile"></v-btn>
 
                 <v-btn icon="mdi-logout" variant="plain" @click="handleLogout"></v-btn>
             </v-app-bar>
@@ -74,15 +74,27 @@
     import authentication from '~/composables/auth'
     import * as requests from '../services/requests'
 
-    const { logout, logedUser } = authentication()
+    const { logout, userId } = authentication()
 
     const menu = ref(false)
 
+    const notifications = ref(false)
     const notificationsList = ref('')
 
     onMounted(async() => {
         notificationsList.value = await requests.getNotifications()
-        console.log(notificationsList.value)
+        sortNotificationsByChat()
+
+        const channel = useNuxtApp().$pusher.subscribe(`user-${userId.value}`)          
+        // Subscribe to the channel and bind to events -> channel chat-{chatId} and event new-message
+        channel.bind('notification', async(data) => {
+            notificationsList.value = await requests.getNotifications()
+            sortNotificationsByChat()
+        })
+        channel.bind('new-notification-enabled', async(data) => {
+            notificationsList.value = await requests.getNotifications()
+            sortNotificationsByChat()
+        })
     })
 
     const handleLogout = () => {
@@ -98,18 +110,35 @@
         useRouter().replace('/forum/')
     }
 
-    const profile = () => {
-        useRouter().push('/me/profile/')
-    }
-
     const unreadNotifications = computed(() => {
-        if (notificationsList && notificationsList.value.length) {
-            return notificationsList.value.filter(notification => !notification.read).length
+        if (notificationsList.value) {
+            return Object.keys(notificationsList.value).length
         }
     })
 
-    const notifications = () => {
+    const sortNotificationsByChat = () => {
+        const items = notificationsList.value
+
+        const notifs = {}
+
+        items.forEach((notification) => {
+            let temp = String(notification.chat)
+            if (!notifs[temp]) {
+                notifs[temp] = []
+            }
+            notifs[temp].push(notification)
+        })
         
+        notificationsList.value = notifs
+    }
+
+    const formattedTime = (timestamp) => {
+        const { formatTimeDifference } = chatTimes()
+        return formatTimeDifference(timestamp)
+    }
+
+    const openNotification = (fest, chat, lastMessage) => {
+        useRouter().push(`/festivals/${fest}/chats/${chat}?message=${lastMessage}`)
     }
 </script>
 

@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+import os
+
+import requests
 from rest_framework import serializers
 from api.models import  Festival, CustomUser, Notification, Post, Chat, Message, Comment
 from djoser.serializers import UserCreateSerializer
@@ -38,6 +41,7 @@ class FestivalSerializer(serializers.ModelSerializer):
                   'website', 
                   'lat', 
                   'lon',
+                  'location',
                   'date_start',
                   'date_end',
                   'img',
@@ -45,6 +49,8 @@ class FestivalSerializer(serializers.ModelSerializer):
                   'is_mod',
                   'is_favourite',
                   'num_favourites']
+        
+        read_only_fields = ['location',]
         
     # attributes are also accessible if they are not seriialized (from model) - mods and favourite_by 
     def get_is_favourite(self, obj):
@@ -225,11 +231,12 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = [
-            'id', 
-            'text', 
+            'id',
+            'text',
+            'img',
             'time',
             'time_string', 
-            'author', 
+            'author',
             'username'
         ]
         read_only_fields = ['author']
@@ -238,7 +245,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return readable_time(obj)
     
     def get_username(self, obj):
-        return obj.author.username
+        return obj.author.username    
 
 def readable_time_notifications(obj):
     now = datetime.now(obj.timestamp.tzinfo)

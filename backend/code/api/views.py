@@ -1,5 +1,7 @@
+import os
 from django.http import JsonResponse
 from django.http import Http404
+import requests
 from .choices import COUNTRIES
 
 from django.db.models import Count, Case, When, FloatField, Value, F, Q
@@ -22,6 +24,13 @@ from datetime import date
 def countries(request):
     return JsonResponse(dict(COUNTRIES))
 
+def get_location(lon, lat):
+    mapbox_token = os.environ.get('MAPBOX_TOKEN')
+    url = f'https://api.mapbox.com/geocoding/v5/mapbox.places/{lon},{lat}.json?access_token={mapbox_token}'
+    data = requests.get(url)
+    data = data.json()
+    return data["features"][0]["place_name"]
+
 class FestivalList(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
 
@@ -29,11 +38,12 @@ class FestivalList(generics.ListCreateAPIView):
     serializer_class = FestivalSerializer
 
     filter_backends = [SearchFilter]
-    search_fields = ['name']
+    search_fields = ['name', 'location']
 
     def get_queryset(self):
         sort_by = self.request.query_params.get('sort')
-        upcoming = self.request.query_params.get('upcoming')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
         favourites = self.request.query_params.get('favourites')
 
         # TODO : Date, nearby
@@ -47,14 +57,23 @@ class FestivalList(generics.ListCreateAPIView):
             )
         if favourites:
             queryset = queryset.filter(favourite_by=user)
-        if upcoming:
-            queryset = queryset.exclude(date_start__isnull=True)
-            queryset = queryset.filter(Q(date_start__gte=date.today()) | Q(date_end__gte=date.today()))
+        
+        if start_date:
+            queryset = queryset.filter(date_start__gte=start_date).order_by('date_start')
+        if end_date:
+            queryset = queryset.filter(date_end__lte=end_date)
         return queryset
     
 
     def perform_create(self, serializer):
-        festival = serializer.save()
+        validated_data = serializer.validated_data
+
+        lon = validated_data.get('lon')
+        lat = validated_data.get('lat')
+        location = get_location(lon, lat)
+        validated_data['location'] = location
+        
+        festival = serializer.save(location=location)
         festival.mods.add(self.request.user)
 
 
@@ -85,10 +104,13 @@ class FestivalDetail(generics.RetrieveUpdateDestroyAPIView):
         # EDIT - else it must be edit request, so check if user is mod
         else:
             if user in instance.mods.all():
+                lon = instance.lon
+                lat = instance.lat
+                location = get_location(lon, lat)
+                instance.location = location
                 serializer.update(instance, serializer.validated_data)
             else:
-                raise serializers.ValidationError('Only mods can change the festival')
-            
+                raise serializers.ValidationError('Only mods can change the festival')        
 
 # for hotels
 class Hotels(generics.ListAPIView):
@@ -130,7 +152,7 @@ class PostList(generics.ListCreateAPIView):
     serializer_class = PostSerializer
 
     filter_backends = [SearchFilter]
-    search_fields = ['title', 'text']
+    search_fields = ['title', 'text', 'festival__name']
 
     def get_queryset(self):
         festival = self.request.query_params.get('festival')
@@ -174,7 +196,25 @@ class PostList(generics.ListCreateAPIView):
                 ).order_by('-ratio')
             # most dislikes
             elif sort == 'Controversial':
-                queryset = queryset.annotate(dislikes=Count('post_disliked_by')).all().order_by('-dislikes')
+                queryset = queryset.annotate(
+                    disliked_by_count=Count('post_disliked_by'),
+                    liked_by_count=Count('post_liked_by'),
+                ).annotate(
+                    ratio=Case(
+                        When(disliked_by_count=0, then=Value(0)),
+                        default=F('liked_by_count') / F('disliked_by_count'),
+                        output_field=FloatField()
+                    ),
+                    sort=Case(
+                        When(Q(disliked_by_count=0)&Q(liked_by_count=0), then=Value(3)),
+                        When(ratio=0, then=Value(2)),
+                        When(ratio__gt=2, then=Value(1)),
+                        When(ratio__lte=2, then=Value(0)),
+                        default=F('ratio'),
+                        output_field=FloatField()
+                    )
+                ).order_by('sort', '-ratio')
+                #queryset = queryset.annotate(dislikes=Count('post_disliked_by')).all().order_by('-dislikes')
             else:
                 queryset = queryset.order_by('-time')
         return queryset
@@ -300,6 +340,13 @@ class ChatDetail(generics.RetrieveUpdateDestroyAPIView):
             instance.notified_users.add(user)
         else:
             instance.notified_users.remove(user)
+        
+        pusher_client.trigger(
+            f'user-{user.id}',
+            'new-notification-enabled',
+            'Notification settings changed'
+        )
+
         instance.save()
         serializer.save()
 
@@ -329,21 +376,31 @@ class MessageList(generics.ListCreateAPIView):
         
         # save
         message = serializer.save(author=user, chat=chat)
-        
-        # send message to pusher to update frontend
-        #### TODO well just exclude is_author field as it is calculated on frontend
-        # probably like this
+
+        # get data stored as dictionary
         data = serializer.data
         data['username'] = user.username
+        
+        # send message to pusher to update frontend
         pusher_client.trigger(f'chat-{message.chat.id}', 'new-message', data)
 
-        ## notifications
+        ## bulk create notifications for all users that should recieve them
         notifications = [
             Notification(user=notified_user, chat=chat, message=message)
             for notified_user in chat.notified_users.all()
             if notified_user != user
         ]
         Notification.objects.bulk_create(notifications)
+        
+        ## trigger pusher event for notification
+        notify_these = chat.notified_users.exclude(id=user.id)
+        
+        for user in notify_these:
+            pusher_client.trigger(
+                f'user-{user.id}',
+                'notification',
+                'test'
+            )
 
 
 class NotificationList(generics.ListCreateAPIView):
@@ -351,4 +408,4 @@ class NotificationList(generics.ListCreateAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        return Notification.objects.filter(user=user, read=False).order_by('-timestamp')
+        return Notification.objects.filter(user=user, chat__notified_users=user, read=False).order_by('-timestamp')
