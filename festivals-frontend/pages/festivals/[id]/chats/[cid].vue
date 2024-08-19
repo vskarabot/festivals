@@ -161,7 +161,6 @@
         }
 
         if (newMessage.value || file.value) {
-            console.log(url)
             requests.sendMessage(festivalId, chatId, newMessage.value, url)
             newMessage.value = ''
             file.value = null

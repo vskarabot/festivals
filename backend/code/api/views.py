@@ -1,3 +1,4 @@
+import os
 from django.http import JsonResponse
 from django.http import Http404
 import requests
@@ -24,7 +25,7 @@ def countries(request):
     return JsonResponse(dict(COUNTRIES))
 
 def get_location(lon, lat):
-    mapbox_token = 'pk.eyJ1IjoidnM3MDE1IiwiYSI6ImNsdmF4M2tmMzAyaWUyanJzcHc2bjA4emIifQ.s6PCMCZ_MgHzrI5E29wlWg'
+    mapbox_token = os.environ.get('MAPBOX_TOKEN')
     url = f'https://api.mapbox.com/geocoding/v5/mapbox.places/{lon},{lat}.json?access_token={mapbox_token}'
     data = requests.get(url)
     data = data.json()

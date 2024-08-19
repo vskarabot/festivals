@@ -10,7 +10,7 @@ export default defineNuxtPlugin(nuxtApp => {
         messagingSenderId: "183368271365",      
         appId: "1:183368271365:web:c187574254125885547e6c",      
         measurementId: "G-JMCNT2FJLL"      
-      };
+      }
 
     const app = initializeApp(firebaseConfig)
     const storage = getStorage(app)
